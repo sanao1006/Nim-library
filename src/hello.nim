@@ -34,8 +34,8 @@ template gStrN(n:int): seq[untyped] =
 # ----------------------------------------------------------------
 template `head`(a:typed):untyped = a[0]
 template `last`(a:typed): untyped = a[len(a)-1]
-template `init` (a:typed):untyped = a[1..len(a)-1]
-template `tail` (a:typed):untyped = a[0..len(a)-2]
+template `tail` (a:typed):untyped = a[1..len(a)-1]
+template `init` (a:typed):untyped = a[0..len(a)-2]
 # 配列埋め----------------------------------------------------------
 proc makeSeqInt(n:int,m:int):seq[int] = 
   var sequence : seq[int] = @[]
@@ -54,6 +54,29 @@ proc makeSeqBool(n:int,m:bool):seq[bool] =
   for i in 0..<n:
     add(sequence, m)
   return sequence
+proc makeUndirectGraph(n:int,m:int):seq[seq[int]] = 
+  var sequence = newSeq[seq[int]]()
+  var a,b:int
+  for i in 0..n:
+    add(sequence, @[])
+  for i in 0..<m:
+    (a,b)=gInts()
+    add(sequence[a],b)
+    add(sequence[b],a)
+  return  tail sequence
+proc makeDirectGraph(n:int,m:int):seq[seq[int]] = 
+  var sequence = newSeq[seq[int]]()
+  var a,b:int
+  for i in 0..n:
+    add(sequence, @[])
+  for i in 0..<m:
+    (a,b)=gInts()
+    add(sequence[a],b)
+  return  tail sequence
+
+template isemptyQ(a:typed):untyped = 
+  if(a.len==0):true
+  else:false
 # ------------------------------------------------------------------
 #debugマクロ
 macro debug(args:varargs[untyped]): typed = 
@@ -95,8 +118,6 @@ proc primeRekkyo(n:int):seq[int] =
       add(list,i)
   return list
 
-proc `//`(a:int,b:int):int = 
-  toInt(floor(toFloat(a) / toFloat(b)))
 #proc primes(n:int):seq[int] = 
 #    var lis=newSeq[int]()
 #    var m:int = n
