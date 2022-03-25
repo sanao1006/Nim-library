@@ -43,6 +43,14 @@ proc makeSeqInt(n:int,m:int):seq[int] =
     add(sequence, m)
   sequence
 
+proc makeSeqInts(h:int,w:int,fill:int):seq[seq[int]] = 
+  var 
+    result = newSeq[seq[int]]()
+    se1 = makeSeqInt(w,fill)
+  for h in 0..<h:
+    result.add(se1)
+  return result
+
 proc makeSeqStr(n:int,m:string):seq[string] = 
   var sequence : seq[string] = @[]
   for i in 0..<n:
@@ -57,13 +65,13 @@ proc makeSeqBool(n:int,m:bool):seq[bool] =
 proc makeUndirectGraph(n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
-  for i in 0..n:
+  for i in 0..<n:
     add(sequence, @[])
   for i in 0..<m:
     (a,b)=gInts()
     add(sequence[a],b)
     add(sequence[b],a)
-  return  tail sequence
+  return  sequence
 proc makeDirectGraph(n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
@@ -72,7 +80,7 @@ proc makeDirectGraph(n:int,m:int):seq[seq[int]] =
   for i in 0..<m:
     (a,b)=gInts()
     add(sequence[a],b)
-  return  tail sequence
+  return  sequence
 
 template isemptyQ(a:typed):untyped = 
   if(a.len==0):true
@@ -118,19 +126,73 @@ proc primeRekkyo(n:int):seq[int] =
       add(list,i)
   return list
 
-#proc primes(n:int):seq[int] = 
-#    var lis=newSeq[int]()
-#    var m:int = n
-#    for i in countup(2,toInt(pow(toFloat(m),0.5))):
-#        while true:
-#            if m mod i == 0:
-#                add(lis,i) 
-#                n = n div i
-#            else:
-#                break
-#    if (n > toInt(pow(toFloat(n),0.5))):
-#        add(lis,n)
-#    return lis
+#幅優先探索
+proc bfs(G:seq[seq[int]],n:int):seq[int] = 
+  var
+    dist = makeSeqInt(n,-1)
+    que = initDeque[int]()  
+  dist[0] = 0
+  que.addLast(0)
+  while(not(que.isemptyQ)):
+    var v = que.popFirst()
+    for nv in G[v]:
+      if(dist[nv] != -1):continue
+      dist[nv] = dist[v] + 1
+      que.addLast(nv)
+  return tail dist
 
-# newSeq[seq[int]]()
+
+
 # main処理----------------------------------------------------------
+var 
+  dx = @[1,0,-1,0]
+  dy = @[0,1,0,-1]
+var ans = 0
+var h,w:int
+(h,w)=gInts()
+
+var sx,sy,gx,gy:int
+(sy,sx)=gInts()
+(gy,gx) = gInts()
+var field =makeSeqStr(h,"")
+for i in 0..<h:
+  field[i] = g()
+sy -= 1
+sx -= 1
+gx -= 1
+gy -= 1
+
+var
+  dist = makeSeqInts(h,w,-1)
+  prev_x = makeSeqInts(h,w,-1)
+  prev_y = makeSeqInts(h,w,-1)
+
+dist[sy][sx] = 0
+
+var que = initDeque[(int,int)]()
+que.addLast((sy,sx))
+
+while(not(que.isemptyQ)):
+  var
+    currentpos = que.popLast()
+    x = currentpos[1]
+    y = currentpos[0]
+
+  for direction in 0..<4:
+    var 
+      next_x = x + dx[direction]
+      next_y = y + dy[direction]
+    if(next_x < 0 or next_x >= w or next_y < 0 or next_y >= h):continue
+    if(field[next_y][next_x]=='#'):continue
+    if(dist[next_y][next_x] != -1):
+      que.addLast((next_y,next_x))
+      dist[next_y][next_y] = dist[y][x] + 1
+      prev_x[next_y][next_x] = x
+      prev_y[next_y][next_x] = y
+
+echo dist[gy][gx]
+
+#for h in 0..<h:
+#  for w in 0..<w:
+#    stdout.write field[h][w]
+#  echo ""
