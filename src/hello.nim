@@ -1,6 +1,6 @@
 import strformat, macros, std/algorithm, tables, sets, lists,
     intsets, critbits, sequtils, strutils, std/math, times,
-    sugar, options, bitops, heapqueue, future,std/deques
+    sugar, options, bitops, heapqueue, future, std/deques
 
 # 入力テンプレ-------------------------------------------------
 proc g(): string = stdin.readLine
@@ -125,12 +125,19 @@ proc primeRekkyo(n:int):seq[int] =
     if(isPrime(i)):
       add(list,i)
   return list
-
+# 素因数分解
+proc primeFactorization(num:int):seq[int] = 
+  var result = newSeq[int]()
+  for i in countup(2,toInt(pow(toFloat(num),0.5))):
+      if(num mod i != 0):continue
+      if(isPrime(i)):
+        add(result,i)
+        if(num div i != i):add(result,(num div i))
 #幅優先探索
 proc bfs(G:seq[seq[int]],n:int):seq[int] = 
   var
     dist = makeSeqInt(n,-1)
-    que = initDeque[int]()  
+    que = initDeque[int]()
   dist[0] = 0
   que.addLast(0)
   while(not(que.isemptyQ)):
@@ -141,58 +148,44 @@ proc bfs(G:seq[seq[int]],n:int):seq[int] =
       que.addLast(nv)
   return tail dist
 
+# var 
+#   dy = @[-1,0,0,1]
+#   dx = @[0,-1,1,0]
+# var field = makeSeqStr(R,"")
+# for i in 0..<R:
+#   field[i] = g()
+# var sx,sy,gx,gy:int
+# for R in 0..<R:
+#   for C in 0..<C:
+#     if(field[R][C]=='s'):
+#       sy = R
+#       sx = C
+#     if(field[R][C]=='g'):
+#       gy = R
+#       gx = C
 
+# var dist = makeSeqInts(R,C,-1)
+
+# dist[sy][sx] = 0
+
+# var que = initDeque[(int,int)]()
+# que.addLast((sy,sx))
+
+# while(not(que.isemptyQ)):
+#   var
+#     currentpos = que.popFirst()
+#     (y,x) = currentpos
+#   for direction in 0..<4:
+#     var
+#       next_x = dx[direction] + x
+#       next_y = dy[direction] + y
+#     if(y==gy and x==gx): break
+#     if(0 <= next_y and next_y < R and 0 <= next_x and next_x < C and field[next_y][next_x] != '#' and dist[next_y][next_x] == -1):
+#       dist[next_y][next_x] = dist[y][x] + 1
+#       que.addLast((next_y,next_x))
+proc nCr(n:int,r:int):int = 
+  if(r==0 or r==n):return 1
+  else:
+    return nCr(n-1,r-1) + nCr(n-1,r)
 
 # main処理----------------------------------------------------------
-var 
-  dx = @[1,0,-1,0]
-  dy = @[0,1,0,-1]
-var ans = 0
-var h,w:int
-(h,w)=gInts()
-
-var sx,sy,gx,gy:int
-(sy,sx)=gInts()
-(gy,gx) = gInts()
-var field =makeSeqStr(h,"")
-for i in 0..<h:
-  field[i] = g()
-sy -= 1
-sx -= 1
-gx -= 1
-gy -= 1
-
-var
-  dist = makeSeqInts(h,w,-1)
-  prev_x = makeSeqInts(h,w,-1)
-  prev_y = makeSeqInts(h,w,-1)
-
-dist[sy][sx] = 0
-
-var que = initDeque[(int,int)]()
-que.addLast((sy,sx))
-
-while(not(que.isemptyQ)):
-  var
-    currentpos = que.popLast()
-    x = currentpos[1]
-    y = currentpos[0]
-
-  for direction in 0..<4:
-    var 
-      next_x = x + dx[direction]
-      next_y = y + dy[direction]
-    if(next_x < 0 or next_x >= w or next_y < 0 or next_y >= h):continue
-    if(field[next_y][next_x]=='#'):continue
-    if(dist[next_y][next_x] != -1):
-      que.addLast((next_y,next_x))
-      dist[next_y][next_y] = dist[y][x] + 1
-      prev_x[next_y][next_x] = x
-      prev_y[next_y][next_x] = y
-
-echo dist[gy][gx]
-
-#for h in 0..<h:
-#  for w in 0..<w:
-#    stdout.write field[h][w]
-#  echo ""
