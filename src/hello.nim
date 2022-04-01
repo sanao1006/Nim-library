@@ -1,7 +1,11 @@
+{.passc: "-std=gnu++17 -Wall -Wextra -O2 -DONLINE_JUDGE -I/opt/boost/gcc/include -L/opt/boost/gcc/lib -I/opt/ac-library".}
 import strformat, macros, std/algorithm, tables, sets, lists,
     intsets, critbits, sequtils, strutils, std/math, times,
     sugar, options, bitops, heapqueue, future, std/deques
 
+proc powMod*(a, b, c: int): int {.importcpp: "atcoder::pow_mod(#, @)", header: "<atcoder/all>".}
+ 
+const MOD = 1000000007 
 # 入力テンプレ-------------------------------------------------
 proc g(): string = stdin.readLine
 proc gin(): int = g().parseInt
@@ -36,12 +40,24 @@ template `head`(a:typed):untyped = a[0]
 template `last`(a:typed): untyped = a[len(a)-1]
 template `tail` (a:typed):untyped = a[1..len(a)-1]
 template `init` (a:typed):untyped = a[0..len(a)-2]
+template `&&`(a,b:untyped):untyped = 
+  if(a==true and b==true):true else: false
+template `||`(a,b:untyped):untyped = 
+  if(a==true or b==true):true else: false
+proc chmax[T](n: var T, m: T) {.inline.} = n = max(n, m)
+proc chmin[T](n: var T, m: T) {.inline.} = n = min(n, m)
+proc plus(a,b:int):int=return a+b
+proc product(a,b:int):int=return a*b
+proc subtract(a,b:int):int=return a-b
+proc zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
+    newSeq(result, xs.len)
+    for i in low(xs)..high(xs): result[i] = f(xs[i],ys[i])
 # 配列埋め----------------------------------------------------------
 proc makeSeqInt(n:int,m:int):seq[int] = 
   var sequence : seq[int] = @[]
   for i in 0..<n:
     add(sequence, m)
-  sequence
+  return sequence
 
 proc makeSeqInts(h:int,w:int,fill:int):seq[seq[int]] = 
   var 
@@ -69,8 +85,8 @@ proc makeUndirectGraph(n:int,m:int):seq[seq[int]] =
     add(sequence, @[])
   for i in 0..<m:
     (a,b)=gInts()
-    add(sequence[a],b)
-    add(sequence[b],a)
+    add(sequence[a-1],b)
+    add(sequence[b-1],a)
   return  sequence
 proc makeDirectGraph(n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
@@ -126,13 +142,16 @@ proc primeRekkyo(n:int):seq[int] =
       add(list,i)
   return list
 # 素因数分解
-proc primeFactorization(num:int):seq[int] = 
-  var result = newSeq[int]()
-  for i in countup(2,toInt(pow(toFloat(num),0.5))):
-      if(num mod i != 0):continue
-      if(isPrime(i)):
-        add(result,i)
-        if(num div i != i):add(result,(num div i))
+proc primeFactorization(n:var int):seq[int]=
+  var res:seq[int]
+  var i:int=2
+  while i<=int sqrt(float n):
+    if n.mod(i)!=0:i+=1
+    else:
+      n=n.div(i)
+      res.add(i)
+  if n!=1:res.add(n)
+  return res
 #幅優先探索
 proc bfs(G:seq[seq[int]],n:int):seq[int] = 
   var
@@ -146,7 +165,13 @@ proc bfs(G:seq[seq[int]],n:int):seq[int] =
       if(dist[nv] != -1):continue
       dist[nv] = dist[v] + 1
       que.addLast(nv)
-  return tail dist
+  return  dist
+
+
+proc nCr(n:int,r:int):int = 
+  if(r==0 or r==n):return 1
+  else:
+    return nCr(n-1,r-1) + nCr(n-1,r)
 
 # var 
 #   dy = @[-1,0,0,1]
@@ -183,9 +208,8 @@ proc bfs(G:seq[seq[int]],n:int):seq[int] =
 #     if(0 <= next_y and next_y < R and 0 <= next_x and next_x < C and field[next_y][next_x] != '#' and dist[next_y][next_x] == -1):
 #       dist[next_y][next_x] = dist[y][x] + 1
 #       que.addLast((next_y,next_x))
-proc nCr(n:int,r:int):int = 
-  if(r==0 or r==n):return 1
-  else:
-    return nCr(n-1,r-1) + nCr(n-1,r)
 
 # main処理----------------------------------------------------------
+var a,b:int
+(a,b)=gInts()
+echo powMod(a,b,MOD)
