@@ -44,40 +44,53 @@ template `&&`(a,b:untyped):untyped =
   if(a==true and b==true):true else: false
 template `||`(a,b:untyped):untyped = 
   if(a==true or b==true):true else: false
-proc chmax[T](n: var T, m: T) {.inline.} = n = max(n, m)
-proc chmin[T](n: var T, m: T) {.inline.} = n = min(n, m)
-proc plus(a,b:int):int=return a+b
-proc product(a,b:int):int=return a*b
-proc subtract(a,b:int):int=return a-b
-proc zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
+func chmax[T](n: var T, m: T) {.inline.} = n = max(n, m)
+func chmin[T](n: var T, m: T) {.inline.} = n = min(n, m)
+func plus[T](a,b:T):T=return a+b
+func product[T](a,b:T):T=return a*b
+func subtract[T](a,b:T):T=return a-b
+func zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
     newSeq(result, xs.len)
     for i in low(xs)..high(xs): result[i] = f(xs[i],ys[i])
-# 配列埋め----------------------------------------------------------
-proc makeSeqInt(n:int,m:int):seq[int] = 
-  var sequence : seq[int] = @[]
-  for i in 0..<n:
-    add(sequence, m)
-  return sequence
+func search[T](x:seq[T],y:T) : bool = 
+  for i in x:
+    if i == y : return true
+  return false
+func `++`[T](a:T):T = a+1
+func `--`[T](a:T):T = a-1
+func Qsort[T](x:seq[T]):seq[T] =
+  if(x.len<=1):return x
+  else:
+    var 
+      pivot = x[0]
+      left:seq[T] = @[]
+      right:seq[T] = @[]
+    for i in 1..<x.len:
+      if(x[i]<pivot):add(left,x[i])
+      else:add(right,x[i])
+    return Qsort(left) & @[pivot] & Qsort(right)
 
-proc makeSeqInts(h:int,w:int,fill:int):seq[seq[int]] = 
-  var 
-    result = newSeq[seq[int]]()
-    se1 = makeSeqInt(w,fill)
-  for h in 0..<h:
-    result.add(se1)
+# 配列埋め----------------------------------------------------------
+
+func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
+  var result = newSeqWith(height, newSeq[T](width))
+  for i in 0..<height:
+    for j in 0..<width:
+      result[i][j]=fille
   return result
 
-proc makeSeqStr(n:int,m:string):seq[string] = 
-  var sequence : seq[string] = @[]
+func makeSeqStr(height:int,fille:string):seq[string] =
+  var result = newSeq[string](height)
+  for i in 0..<height:
+      result[i]=fille
+  return result
+
+func makeSeqNum[T](n:int,m:T):seq[T] = 
+  var sequence : seq[T] = @[]
   for i in 0..<n:
     add(sequence, m)
   return sequence
 
-proc makeSeqBool(n:int,m:bool):seq[bool] = 
-  var sequence : seq[bool] = @[]
-  for i in 0..<n:
-    add(sequence, m)
-  return sequence
 proc makeUndirectGraph(n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
@@ -95,7 +108,7 @@ proc makeDirectGraph(n:int,m:int):seq[seq[int]] =
     add(sequence, @[])
   for i in 0..<m:
     (a,b)=gInts()
-    add(sequence[a],b)
+    add(sequence[a-1],b)
   return  sequence
 
 template isemptyQ(a:typed):untyped = 
@@ -112,13 +125,15 @@ macro debug(args:varargs[untyped]): typed =
       stdout.write ": "
       stdout.writeLine `arg`
 # 累積和
-proc cumsum(m:seq[int],n:int):seq[int] = 
-  var arr : seq[int] = makeSeqInt(n+1,0)
+func cumsum[T](m:seq[T],n:int):seq[T] = 
+  var
+    zero:T = 0 
+    arr : seq[T] = makeSeqNum(n+1,zero)
   for i in 0..<n:
     arr[i+1]=arr[i]+m[i]
   return arr
 # 約数列挙
-proc divisors(num:int):seq[int] =
+func divisors(num:int):seq[int] =
     var divisors:seq[int] = @[]
     for i in countup(1,toInt(pow(toFloat(num),0.5))):
         if num mod i != 0:continue
@@ -127,7 +142,7 @@ proc divisors(num:int):seq[int] =
     divisors.sort()
     return divisors
 #素数判定
-proc isPrime(num:int):bool = 
+func isPrime(num:int):bool = 
   if(num <= 1): return false
   else:
     for i in countup(2,toInt(pow(toFloat(num),0.5))):
@@ -135,14 +150,14 @@ proc isPrime(num:int):bool =
         return false
     return true
 #素数列挙
-proc primeRekkyo(n:int):seq[int] = 
+func primeRekkyo(n:int):seq[int] = 
   var list:seq[int] = @[]
   for i in 0..n:
     if(isPrime(i)):
       add(list,i)
   return list
 # 素因数分解
-proc primeFactorization(n:var int):seq[int]=
+func primeFactorization(n:var int):seq[int]=
   var res:seq[int]
   var i:int=2
   while i<=int sqrt(float n):
@@ -153,9 +168,9 @@ proc primeFactorization(n:var int):seq[int]=
   if n!=1:res.add(n)
   return res
 #幅優先探索
-proc bfs(G:seq[seq[int]],n:int):seq[int] = 
+func bfs(G:seq[seq[int]],n:int):seq[int] = 
   var
-    dist = makeSeqInt(n,-1)
+    dist = makeSeqNum(n,-1)
     que = initDeque[int]()
   dist[0] = 0
   que.addLast(0)
@@ -189,7 +204,7 @@ proc nCr(n:int,r:int):int =
 #       gy = R
 #       gx = C
 
-# var dist = makeSeqInts(R,C,-1)
+# var dist = makeSeqNums(R,C,-1)
 
 # dist[sy][sx] = 0
 
@@ -210,6 +225,5 @@ proc nCr(n:int,r:int):int =
 #       que.addLast((next_y,next_x))
 
 # main処理----------------------------------------------------------
-var a,b:int
-(a,b)=gInts()
-echo powMod(a,b,MOD)
+
+
