@@ -69,6 +69,9 @@ func Qsort[T](x:seq[T]):seq[T] =
       if(x[i]<pivot):add(left,x[i])
       else:add(right,x[i])
     return Qsort(left) & @[pivot] & Qsort(right)
+func partialSort[T](List:seq[T],left:T,right:T):seq[T] = 
+  var sortedZone:seq[T] = List[left - 1..right - 1].Qsort()
+  return List[0..left - 2] & sortedZone & List[right  .. List.len - 1]    
 
 # 配列埋め----------------------------------------------------------
 
