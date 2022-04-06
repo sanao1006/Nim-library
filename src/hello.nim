@@ -72,7 +72,14 @@ func Qsort[T](x:seq[T]):seq[T] =
 func partialSort[T](List:seq[T],left:T,right:T):seq[T] = 
   var sortedZone:seq[T] = List[left - 1..right - 1].Qsort()
   return List[0..left - 2] & sortedZone & List[right  .. List.len - 1]    
-
+proc rotR(a:char):char = 
+  var b=ord a
+  if(b==122):return chr(97)
+  else:return chr(++b)
+proc rotL(a:char):char = 
+  var b=ord a
+  if(b==97):return chr(122)
+  else:return chr(--b)
 # 配列埋め----------------------------------------------------------
 
 func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
