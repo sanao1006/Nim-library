@@ -80,6 +80,17 @@ proc rotL(a:char):char =
   var b=ord a
   if(b==97):return chr(122)
   else:return chr(--b)
+proc msi():seq[int]=newSeq[int]()
+func transepose[T](arr:seq[seq[T]]):seq[seq[T]] = 
+  var
+    hight=arr.len
+    width=arr.mapIt(it.len)[0]
+  result=newSeq[seq[T]]()
+  for i in 0..<width:
+    var tmpArr=msi()
+    for j in 0..<hight:
+      tmpArr.add(arr[j][i])
+    result.add(tmpArr)
 # 配列埋め----------------------------------------------------------
 
 func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
