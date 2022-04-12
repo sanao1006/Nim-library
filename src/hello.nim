@@ -91,6 +91,7 @@ func transepose[T](arr:seq[seq[T]]):seq[seq[T]] =
     for j in 0..<hight:
       tmpArr.add(arr[j][i])
     result.add(tmpArr)
+proc toInt(c:char): int = return int(c) - int('0')
 # 配列埋め----------------------------------------------------------
 
 func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
