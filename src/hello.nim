@@ -118,26 +118,31 @@ func makeSeqNum[T](n:int,m:T):seq[T] =
     add(sequence, m)
   return sequence
 
-proc makeUndirectGraph(n:int,m:int):seq[seq[int]] = 
+proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
   for i in 0..<n:
     add(sequence, @[])
-  for i in 0..<m:
-    (a,b)=gInts()
-    add(sequence[a-1],b)
-    add(sequence[b-1],a)
+  for i in arr:
+    (a,b)=(i[0],i[1])
+    add(sequence[a-1],b-1)
+    add(sequence[b-1],a-1)
   return  sequence
-proc makeDirectGraph(n:int,m:int):seq[seq[int]] = 
+proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
   for i in 0..n:
     add(sequence, @[])
-  for i in 0..<m:
-    (a,b)=gInts()
-    add(sequence[a-1],b)
+  for i in arr:
+    (a,b)=(i[0],i[1])
+    add(sequence[a-1],b-1)
   return  sequence
-
+func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
+  result=newSeq[seq[bool]]()
+  for i in 0..<n:result.add(makeSeqNum(n,false))
+  for i in arr:
+    result[i[0]-1][i[1]-1]=true
+    result[i[1]-1][i[0]-1]=true
 template isemptyQ(a:typed):untyped = 
   if(a.len==0):true
   else:false
