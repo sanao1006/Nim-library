@@ -36,8 +36,13 @@ template gStrN(n:int): seq[untyped] =
     add(sequence, input)
   sequence
 # ----------------------------------------------------------------
-template `head`(a:typed):untyped = a[0]
-template `last`(a:typed): untyped = a[len(a)-1]
+func last[T](a:openarray[T]): int = a[a.len - 1]
+func head(a:openarray[int]):Option[int] =
+  if(a.len > 0):a[0].some else:int.none
+func head(a:openarray[float]):Option[float] =
+  if(a.len > 0):a[0].some else:float.none
+func head(a:openarray[string]):Option[string] =
+  if(a.len > 0):a[0].some else:string.none
 template `tail` (a:typed):untyped = a[1..len(a)-1]
 template `init` (a:typed):untyped = a[0..len(a)-2]
 template `&&`(a,b:untyped):untyped = 
