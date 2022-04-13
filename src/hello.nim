@@ -194,6 +194,21 @@ func primeFactorization(n:var int):seq[int]=
       res.add(i)
   if n!=1:res.add(n)
   return res
+#順列全探索用  quoted from "https://forum.nim-lang.org/t/2812"
+proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
+  result = newSeq[seq[T]]()
+  if n <= 0: return
+  for i in 0 .. a.high:
+    if not use[i]:
+      if n == 1:result.add(@[a[i]])
+      else:
+        use[i] = true
+        for j in perm(a, n - 1, use):result.add(a[i] & j)
+        use[i] = false
+proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
+  var use = newSeq[bool](a.len)
+  perm(a, n, use)
+  
 #幅優先探索
 func bfs(G:seq[seq[int]],n:int):seq[int] = 
   var
