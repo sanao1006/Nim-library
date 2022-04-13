@@ -210,7 +210,7 @@ func Eratosthenes(N:int):seq[int] =
         while q <= N:
             isprime[q] = false
             q += p
-    return(zip((tail isprime),(1..N).toSeq)).filterIt(it.fst==true).mapIt(it.snd)
+    return(zip((tail isprime),(1..N).toSeq)).filterIt(it[0]==true).mapIt(it[1])
  
 #順列全探索用  quoted from "https://forum.nim-lang.org/t/2812"
 proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
