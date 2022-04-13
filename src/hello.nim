@@ -194,6 +194,19 @@ func primeFactorization(n:var int):seq[int]=
       res.add(i)
   if n!=1:res.add(n)
   return res
+#エラトスネテスの篩
+func Eratosthenes(N:int):seq[int] =
+    var isprime = makeSeqNum(N+1,true)
+    isprime[0] = false
+    isprime[1] = false
+    for p in 2..<N+1:
+        if not isprime[p]:continue
+        var q = p * 2
+        while q <= N:
+            isprime[q] = false
+            q += p
+    return(zip((tail isprime),(1..N).toSeq)).filterIt(it.fst==true).mapIt(it.snd)
+ 
 #順列全探索用  quoted from "https://forum.nim-lang.org/t/2812"
 proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
   result = newSeq[seq[T]]()
