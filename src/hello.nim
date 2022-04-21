@@ -36,7 +36,7 @@ template gStrN(n:int): seq[untyped] =
     add(sequence, input)
   sequence
 # ----------------------------------------------------------------
-func last[T](a:openarray[T]): int = a[a.len - 1]
+template last(a:untyped): untyped = a[a.len - 1]
 func head(a:openarray[int]):Option[int] =
   if(a.len > 0):a[0].some else:int.none
 func head(a:openarray[float]):Option[float] =
