@@ -248,6 +248,32 @@ proc nCr(n:int,r:int):int =
   else:
     return nCr(n-1,r-1) + nCr(n-1,r)
 
+proc products(n:int):seq[seq[int]]=
+  var res = newSeq[seq[int]]()
+  for bit in 0..<(1 shl n):
+    var sub: seq[int]
+    for i in 0..<n:
+        if bit.testBit(i):
+            sub.add(i)
+    res.add(sub)
+  return res.tail
+proc productArray(n:int,arr:seq[string],k:seq[seq[int]]=products(n)):seq[seq[string]]=
+  var res=newSeq[seq[string]]()
+  for i in k:
+    var tmp=newSeq[string]()
+    for j in i:
+      tmp.add(arr[j])
+    res.add(tmp)
+  return res
+proc productArray(n:int,arr:seq[int],k:seq[seq[int]]=products(n)):seq[seq[int]]=
+  var res=newSeq[seq[int]]()
+  for i in k:
+    var tmp=newSeq[int]()
+    for j in i:
+      tmp.add(arr[j])
+    res.add(tmp)
+  return res
+
 # var 
 #   dy = @[-1,0,0,1]
 #   dx = @[0,-1,1,0]
