@@ -247,32 +247,76 @@ proc nCr(n:int,r:int):int =
   if(r==0 or r==n):return 1
   else:
     return nCr(n-1,r-1) + nCr(n-1,r)
+#itertools quoted from "https://github.com/narimiran/itertools/blob/master/src/itertools.nim"
+iterator prod[T](s: openArray[T], repeat: Positive): seq[T] =
+  var counters = newSeq[int](repeat)
+  block outer:
+    while true:
+      var result = newSeq[T](repeat)
+      for i, cnt in counters:
+        result[i] = s[cnt]
+      yield result
+      var i = repeat - 1
+      while true:
+        inc counters[i]
+        if counters[i] == s.len:
+          counters[i] = 0
+          dec i
+        else: break
+        if i < 0:
+          break outer
 
-proc products(n:int):seq[seq[int]]=
-  var res = newSeq[seq[int]]()
-  for bit in 0..<(1 shl n):
-    var sub: seq[int]
-    for i in 0..<n:
-        if bit.testBit(i):
-            sub.add(i)
-    res.add(sub)
-  return res.tail
-proc productArray(n:int,arr:seq[string],k:seq[seq[int]]=products(n)):seq[seq[string]]=
-  var res=newSeq[seq[string]]()
-  for i in k:
-    var tmp=newSeq[string]()
-    for j in i:
-      tmp.add(arr[j])
-    res.add(tmp)
+iterator prod[T, U](s1: openArray[T], s2: openArray[U]): tuple[a: T, b: U] =
+  for a in s1:
+    for b in s2:
+      yield (a, b)
+
+iterator prod[T, U, V](s1: openArray[T], s2: openArray[U], s3: openArray[V]):tuple[a: T, b: U, c: V] =
+  for a in s1:
+    for b in s2:
+      for c in s3:
+        yield (a, b, c)
+
+iterator prod[T, U, V, W](s1: openArray[T], s2: openArray[U], s3: openArray[V],s4: openArray[W]): tuple[a: T, b: U, c: V, d: W] =
+  for a in s1:
+    for b in s2:
+      for c in s3:
+        for d in s4:
+          yield (a, b, c, d)
+iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
+  var k = s[0]
+  var v = @[k]
+  var i = 1
+  while i < s.len:
+    if s[i] != k:
+      yield (k, v)
+      k = s[i]
+      v = @[k]
+    else:
+      v.add k
+    inc i
+  yield (k, v)
+
+iterator groupC[T, U](s: openArray[T], f: proc(a: T): U): tuple[k: U, v: seq[T]] =
+  var k = f(s[0])
+  var v = @[s[0]]
+  var i = 1
+  while i < s.len:
+    let fx = f(s[i])
+    if fx != k:
+      yield (k, v)
+      k = fx
+      v = @[s[i]]
+    else:
+      v.add s[i]
+    inc i
+  yield (k, v)
+# itertools end
+proc group[T](s:seq[T]):seq[seq[T]] =
+  var res = newSeq[seq[T]]()
+  for (k,v) in groupC(s):res.add(v)
   return res
-proc productArray(n:int,arr:seq[int],k:seq[seq[int]]=products(n)):seq[seq[int]]=
-  var res=newSeq[seq[int]]()
-  for i in k:
-    var tmp=newSeq[int]()
-    for j in i:
-      tmp.add(arr[j])
-    res.add(tmp)
-  return res
+
 
 # var 
 #   dy = @[-1,0,0,1]
