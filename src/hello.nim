@@ -228,12 +228,12 @@ proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
   perm(a, n, use)
   
 #幅優先探索
-func bfs(G:seq[seq[int]],n:int):seq[int] = 
+func bfs(G:seq[seq[int]],n:int,start:int):seq[int] = 
   var
     dist = makeSeqNum(n,-1)
     que = initDeque[int]()
-  dist[0] = 0
-  que.addLast(0)
+  dist[start] = 0
+  que.addLast(start)
   while(not(que.isemptyQ)):
     var v = que.popFirst()
     for nv in G[v]:
