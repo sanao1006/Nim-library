@@ -316,7 +316,15 @@ proc group[T](s:seq[T]):seq[seq[T]] =
   var res = newSeq[seq[T]]()
   for (k,v) in groupC(s):res.add(v)
   return res
-
+# compress
+func compress[T](arr:seq[T]):seq[T]=
+  var 
+    c:seq[T] = arr.sorted().deduplicate()
+    zero:T = 0
+    res = makeSeqNum(arr.len,zero)
+  for i in 0..<arr.len:
+    res[i]= c.lowerBound(arr[i],system.cmp[int])
+  return res  
 
 # var 
 #   dy = @[-1,0,0,1]
