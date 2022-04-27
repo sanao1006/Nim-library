@@ -325,7 +325,12 @@ func compress[T](arr:seq[T]):seq[T]=
   for i in 0..<arr.len:
     res[i]= c.lowerBound(arr[i],system.cmp[int])
   return res  
+#tuple sort
+proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
+  arr.sortedByIt(it.fst).mapIt((it.fst,it.snd))
 
+proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
+  return arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
 # var 
 #   dy = @[-1,0,0,1]
 #   dx = @[0,-1,1,0]
