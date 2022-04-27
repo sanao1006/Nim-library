@@ -319,7 +319,7 @@ proc group[T](s:seq[T]):seq[seq[T]] =
 # compress
 func compress[T](arr:seq[T]):seq[T]=
   var 
-    c:seq[T] = arr.sorted().deduplicate()
+    c:seq[T] = arr.toHashSet().toSeq().sorted()
     zero:T = 0
     res = makeSeqNum(arr.len,zero)
   for i in 0..<arr.len:
