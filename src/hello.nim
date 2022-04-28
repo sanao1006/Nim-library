@@ -4,7 +4,7 @@ import strformat, macros, std/algorithm, tables, sets, lists,
     intsets, critbits, sequtils, strutils, std/math, times,
     sugar, options, bitops, heapqueue, future, std/deques
 
-
+proc powMod*(a, b, c: int): int {.importcpp: "atcoder::pow_mod(#, @)", header: "<atcoder/all>".}
  
 const MOD = 1000000007 
 # 入力テンプレ-------------------------------------------------
@@ -58,6 +58,8 @@ func subtract[T](a,b:T):T=return a-b
 func zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
     newSeq(result, xs.len)
     for i in low(xs)..high(xs): result[i] = f(xs[i],ys[i])
+proc zip3[S,T,U](a:seq[S],b:seq[T],c:seq[U]):seq[(S,T,U)]=
+  for i in zip(zip(a,b),c):result.add((i[0][0],i[0][1],i[1]))
 func search[T](x:seq[T],y:T) : bool = 
   for i in x:
     if i == y : return true
@@ -331,9 +333,10 @@ iterator prod[T, U, V, W](s1: openArray[T], s2: openArray[U], s3: openArray[V],s
         for d in s4:
           yield (a, b, c, d)
 iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
-  var k = s[0]
-  var v = @[k]
-  var i = 1
+  var
+    k = s[0]
+    v = @[k]
+    i = 1
   while i < s.len:
     if s[i] != k:
       yield (k, v)
@@ -345,9 +348,10 @@ iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
   yield (k, v)
 
 iterator groupC[T, U](s: openArray[T], f: proc(a: T): U): tuple[k: U, v: seq[T]] =
-  var k = f(s[0])
-  var v = @[s[0]]
-  var i = 1
+  var 
+    k = f(s[0])
+    v = @[s[0]]
+    i = 1
   while i < s.len:
     let fx = f(s[i])
     if fx != k:
@@ -379,8 +383,6 @@ proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
 proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
   return arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
 
-proc zip3[S,T,U](a:seq[S],b:seq[T],c:seq[U]):seq[(S,T,U)]=
-  for i in zip(zip(a,b),c):result.add((i[0][0],i[0][1],i[1]))
 # main処理----------------------------------------------------------
 
 proc main()=
