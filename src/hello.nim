@@ -89,16 +89,28 @@ proc rotL(a:char):char =
   if(b==97):return chr(122)
   else:return chr(--b)
 proc msi():seq[int]=newSeq[int]()
-func transepose[T](arr:seq[seq[T]]):seq[seq[T]] = 
+func transepose(arr:seq[seq[int]]):seq[seq[int]] = 
   var
     hight=arr.len
     width=arr.mapIt(it.len)[0]
-  result=newSeq[seq[T]]()
+  result=newSeq[seq[int]]()
   for i in 0..<width:
     var tmpArr=msi()
     for j in 0..<hight:
       tmpArr.add(arr[j][i])
     result.add(tmpArr)
+func transepose(arr:seq[string]):seq[string] = 
+  var
+    hight=arr.len
+    width=arr.mapIt(it.len)[0]
+  var res=newSeq[seq[char]]()
+  for i in 0..<width:
+    var tmpArr=newSeq[char]()
+    for j in 0..<hight:
+      tmpArr.add(arr[j][i])
+    res.add(tmpArr)
+  return res.mapIt(it.join())
+  
 proc toInt(c:char): int = return int(c) - int('0')
 # 配列埋め----------------------------------------------------------
 
