@@ -193,6 +193,23 @@ func bfs(G:seq[seq[int]],n:int,start:int):seq[int] =
       dist[nv] = dist[v] + 1
       que.addLast(nv)
   return  dist
+
+#迷路探索
+proc maze(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
+  var 
+    dist=makeSeqNums(R,C,-1)
+    que=initDeque[(int,int)]()
+  que.addLast((sy,sx))
+  dist[sy][sx]=0
+  while(not(que.isemptyQ)):
+    var(ny,nx)=que.popFirst()
+    for (i2,j2) in ([[ny+1,nx],[ny-1,nx],[ny,nx+1],[ny,nx-1]]):
+      if(not((i2>=0 and i2 < R) and (j2 >= 0 and j2 < C))):continue
+      if(field[ny][nx]==wall):continue
+      if(dist[i2][j2] == -1):
+        dist[i2][j2]=dist[ny][nx] + 1
+        que.addLast((i2,j2))
+  return dist[gy][gx]
 # ------------------------------------------------------------------
 #debugマクロ
 macro debug(args:varargs[untyped]): typed = 
@@ -362,41 +379,7 @@ proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
 
 proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
   return arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
-# var 
-#   dy = @[-1,0,0,1]
-#   dx = @[0,-1,1,0]
-# var field = makeSeqStr(R,"")
-# for i in 0..<R:
-#   field[i] = g()
-# var sx,sy,gx,gy:int
-# for R in 0..<R:
-#   for C in 0..<C:
-#     if(field[R][C]=='s'):
-#       sy = R
-#       sx = C
-#     if(field[R][C]=='g'):
-#       gy = R
-#       gx = C
 
-# var dist = makeSeqNums(R,C,-1)
-
-# dist[sy][sx] = 0
-
-# var que = initDeque[(int,int)]()
-# que.addLast((sy,sx))
-
-# while(not(que.isemptyQ)):
-#   var
-#     currentpos = que.popFirst()
-#     (y,x) = currentpos
-#   for direction in 0..<4:
-#     var
-#       next_x = dx[direction] + x
-#       next_y = dy[direction] + y
-#     if(y==gy and x==gx): break
-#     if(0 <= next_y and next_y < R and 0 <= next_x and next_x < C and field[next_y][next_x] != '#' and dist[next_y][next_x] == -1):
-#       dist[next_y][next_x] = dist[y][x] + 1
-#       que.addLast((next_y,next_x))
 
 # main処理----------------------------------------------------------
 
