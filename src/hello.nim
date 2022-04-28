@@ -152,6 +152,10 @@ proc makeDiGraphWithCost(n,m:int):seq[seq[(int,int)]] =
     var inp = gInts()
     result[inp[0]-1].add((inp[1]-1,inp[2]))
 
+template isemptyQ(a:typed):untyped = 
+  if(a.len==0):true
+  else:false
+
 proc makeUnGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
   for i in 0..<n:result.add(@[])
   for i in 0..<m:
@@ -159,11 +163,12 @@ proc makeUnGraphWithCost(n,m:int):seq[seq[(int,int)]] =
     result[inp[0]-1].add((inp[1]-1,inp[2]))
     result[inp[1]-1].add((inp[0]-1,inp[2]))
 
+#ダイクストラ
 proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
+  const INF=1000000000
   var
-    INF=1000000000
     heap = initHeapQueue[(int,int)]()
-    cost=makeSeqNum(n,Inf)
+    cost=makeSeqNum(n,INF)
   heap.push((0,start))
   while(not(heap.isemptyQ)):
     var
@@ -174,10 +179,20 @@ proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
         heap.push((c+d,i))
   return cost
 
-template isemptyQ(a:typed):untyped = 
-  if(a.len==0):true
-  else:false
-
+#幅優先探索
+func bfs(G:seq[seq[int]],n:int,start:int):seq[int] = 
+  var
+    dist = makeSeqNum(n,-1)
+    que = initDeque[int]()
+  dist[start] = 0
+  que.addLast(start)
+  while(not(que.isemptyQ)):
+    var v = que.popFirst()
+    for nv in G[v]:
+      if(dist[nv] != -1):continue
+      dist[nv] = dist[v] + 1
+      que.addLast(nv)
+  return  dist
 # ------------------------------------------------------------------
 #debugマクロ
 macro debug(args:varargs[untyped]): typed = 
@@ -258,22 +273,6 @@ proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
 proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
   var use = newSeq[bool](a.len)
   perm(a, n, use)
-  
-#幅優先探索
-func bfs(G:seq[seq[int]],n:int,start:int):seq[int] = 
-  var
-    dist = makeSeqNum(n,-1)
-    que = initDeque[int]()
-  dist[start] = 0
-  que.addLast(start)
-  while(not(que.isemptyQ)):
-    var v = que.popFirst()
-    for nv in G[v]:
-      if(dist[nv] != -1):continue
-      dist[nv] = dist[v] + 1
-      que.addLast(nv)
-  return  dist
-
 
 proc nCr(n:int,r:int):int = 
   if(r==0 or r==n):return 1
