@@ -1,9 +1,10 @@
 {.passc: "-std=gnu++17 -Wall -Wextra -O2 -DONLINE_JUDGE -I/opt/boost/gcc/include -L/opt/boost/gcc/lib -I/opt/ac-library".}
+{.optimization:speed.}
 import strformat, macros, std/algorithm, tables, sets, lists,
     intsets, critbits, sequtils, strutils, std/math, times,
     sugar, options, bitops, heapqueue, future, std/deques
 
-proc powMod*(a, b, c: int): int {.importcpp: "atcoder::pow_mod(#, @)", header: "<atcoder/all>".}
+
  
 const MOD = 1000000007 
 # 入力テンプレ-------------------------------------------------
@@ -57,8 +58,6 @@ func subtract[T](a,b:T):T=return a-b
 func zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
     newSeq(result, xs.len)
     for i in low(xs)..high(xs): result[i] = f(xs[i],ys[i])
-proc zip3[S,T,U](a:seq[S],b:seq[T],c:seq[U]):seq[(S,T,U)]=
-  for i in zip(zip(a,b),c):result.add((i[0][0],i[0][1],i[1]))
 func search[T](x:seq[T],y:T) : bool = 
   for i in x:
     if i == y : return true
@@ -115,16 +114,13 @@ func makeSeqStr(height:int,fille:string):seq[string] =
   return result
 
 func makeSeqNum[T](n:int,m:T):seq[T] = 
-  var sequence : seq[T] = @[]
-  for i in 0..<n:
-    add(sequence, m)
-  return sequence
+  result=newSeq[T](n)
+  for i in 0..<n:result[i]=m
+
 #グラフ関連------------------------------------------------------------
 proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
-  var sequence = newSeq[seq[int]]()
+  var sequence = newSeq[seq[int]](n)
   var a,b:int
-  for i in 0..<n:
-    add(sequence, @[])
   for i in arr:
     (a,b)=(i[0],i[1])
     add(sequence[a-1],b-1)
@@ -132,10 +128,8 @@ proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] =
   return  sequence
 
 proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
-  var sequence = newSeq[seq[int]]()
+  var sequence = newSeq[seq[int]](n)
   var a,b:int
-  for i in 0..n:
-    add(sequence, @[])
   for i in arr:
     (a,b)=(i[0],i[1])
     add(sequence[a-1],b-1)
@@ -149,35 +143,37 @@ func path(arr:seq[seq[int]],n:int):seq[seq[bool]] =
     result[i[1]-1][i[0]-1]=true
     
 proc makeDiGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
-  for i in 0..<n:result.add(@[])
+  result=newSeq[seq[(int,int)]](n)
   for i in 0..<m:
     var inp = gInts()
     result[inp[0]-1].add((inp[1]-1,inp[2]))
 
-template isemptyQ(a:typed):untyped = 
-  if(a.len==0):true
-  else:false
-
 proc makeUnGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
-  for i in 0..<n:result.add(@[])
+  result=newSeq[seq[(int,int)]](n)
   for i in 0..<m:
     var inp = gInts()
     result[inp[0]-1].add((inp[1]-1,inp[2]))
     result[inp[1]-1].add((inp[0]-1,inp[2]))
 
+template isemptyQ(a:typed):untyped = 
+  if(a.len==0):true
+  else:false
+
 #ダイクストラ
 proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
-  const INF=1000000000
   var
+    inf=1000000000
     heap = initHeapQueue[(int,int)]()
-    cost=makeSeqNum(n,INF)
+    cost=makeSeqNum(n,inf)
   heap.push((0,start))
+  cost[start] = 0
   while(not(heap.isemptyQ)):
     var
       (c,pos)=heap.pop()
-    if(cost[pos]>c):
-      cost[pos]=c
-      for (i,d) in arr[pos]:
+    if(cost[pos]<c):continue
+    for (i,d) in arr[pos]:
+      if (cost[i] > c + d):
+        cost[i] = c + d
         heap.push((c+d,i))
   return cost
 
@@ -293,6 +289,7 @@ proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
   var use = newSeq[bool](a.len)
   perm(a, n, use)
 
+
 proc nCr(n:int,r:int):int = 
   if(r==0 or r==n):return 1
   else:
@@ -334,10 +331,9 @@ iterator prod[T, U, V, W](s1: openArray[T], s2: openArray[U], s3: openArray[V],s
         for d in s4:
           yield (a, b, c, d)
 iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
-  var
-    k = s[0]
-    v = @[k]
-    i = 1
+  var k = s[0]
+  var v = @[k]
+  var i = 1
   while i < s.len:
     if s[i] != k:
       yield (k, v)
@@ -349,10 +345,9 @@ iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
   yield (k, v)
 
 iterator groupC[T, U](s: openArray[T], f: proc(a: T): U): tuple[k: U, v: seq[T]] =
-  var 
-    k = f(s[0])
-    v = @[s[0]]
-    i = 1
+  var k = f(s[0])
+  var v = @[s[0]]
+  var i = 1
   while i < s.len:
     let fx = f(s[i])
     if fx != k:
@@ -384,7 +379,11 @@ proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
 proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
   return arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
 
-
+proc zip3[S,T,U](a:seq[S],b:seq[T],c:seq[U]):seq[(S,T,U)]=
+  for i in zip(zip(a,b),c):result.add((i[0][0],i[0][1],i[1]))
 # main処理----------------------------------------------------------
 
-
+proc main()=
+  echo "Hello, World!"
+when isMainModule:
+  main()
