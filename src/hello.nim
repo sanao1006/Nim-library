@@ -117,7 +117,7 @@ func makeSeqNum[T](n:int,m:T):seq[T] =
   for i in 0..<n:
     add(sequence, m)
   return sequence
-
+#グラフ関連------------------------------------------------------------
 proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
@@ -128,6 +128,7 @@ proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] =
     add(sequence[a-1],b-1)
     add(sequence[b-1],a-1)
   return  sequence
+
 proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
   var sequence = newSeq[seq[int]]()
   var a,b:int
@@ -137,15 +138,46 @@ proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] =
     (a,b)=(i[0],i[1])
     add(sequence[a-1],b-1)
   return  sequence
+
 func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
   result=newSeq[seq[bool]]()
   for i in 0..<n:result.add(makeSeqNum(n,false))
   for i in arr:
     result[i[0]-1][i[1]-1]=true
     result[i[1]-1][i[0]-1]=true
+    
+proc makeDiGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
+  for i in 0..<n:result.add(@[])
+  for i in 0..<m:
+    var inp = gInts()
+    result[inp[0]-1].add((inp[1]-1,inp[2]))
+
+proc makeUnGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
+  for i in 0..<n:result.add(@[])
+  for i in 0..<m:
+    var inp = gInts()
+    result[inp[0]-1].add((inp[1]-1,inp[2]))
+    result[inp[1]-1].add((inp[0]-1,inp[2]))
+
+proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
+  var
+    INF=1000000000
+    heap = initHeapQueue[(int,int)]()
+    cost=makeSeqNum(n,Inf)
+  heap.push((0,start))
+  while(not(heap.isemptyQ)):
+    var
+      (c,pos)=heap.pop()
+    if(cost[pos]>c):
+      cost[pos]=c
+      for (i,d) in arr[pos]:
+        heap.push((c+d,i))
+  return cost
+
 template isemptyQ(a:typed):untyped = 
   if(a.len==0):true
   else:false
+
 # ------------------------------------------------------------------
 #debugマクロ
 macro debug(args:varargs[untyped]): typed = 
