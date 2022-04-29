@@ -10,32 +10,16 @@ const MOD = 1000000007
 # 入力テンプレ-------------------------------------------------
 proc g(): string = stdin.readLine
 proc gin(): int = g().parseInt
-template gInts(): seq[untyped] = g().split.map(parseInt)
-template gIntsN(n:int): seq[untyped] = 
-  var sequence:seq[int] = @[]
-  for i in 0..n-1:
-    var input = gin()
-    add(sequence, input)
-  sequence
-template gIntsNs(n:int): untyped =
-  var sequence:seq[seq[int]] = @[]
-  for i in 0..n-1:
-    var input = gInts()
-    add(sequence, input)
-  sequence
-template inpuTupple(n:int):seq[(untyped,untyped)] =
-  var sequence:seq[(string,int)] =  @[]
-  for i in 0..<n:
-    var input = split(g())
-    let tupple:(string,int) = (input[0],input[1].parseInt)
-    add(sequence,tupple)
-  sequence
-template gStrN(n:int): seq[untyped] = 
-  var sequence:seq[string] = @[]
-  for i in 0..n-1:
-    var input = g()
-    add(sequence, input)
-  sequence
+proc gInts(): seq[int] = g().split.map(parseInt)
+proc gIntsN(n:int): seq[int] = 
+  result=newSeq[int](n)
+  for i in 0..n-1:result[i]=gin()
+proc gIntsNs(n:int): seq[seq[int]] =
+  result=newSeq[seq[int]](n)
+  for i in 0..n-1:result[i]=gInts()
+proc gStrN(n:int): seq[string] = 
+  result = newSeq[string](n)
+  for i in 0..n-1:result[i]=g()
 # ----------------------------------------------------------------
 template last(a:untyped): untyped = a[a.len - 1]
 func head(a:openarray[int]):Option[int] =
@@ -115,17 +99,14 @@ proc toInt(c:char): int = return int(c) - int('0')
 # 配列埋め----------------------------------------------------------
 
 func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
-  var result = newSeqWith(height, newSeq[T](width))
+  result = newSeqWith(height, newSeq[T](width))
   for i in 0..<height:
     for j in 0..<width:
       result[i][j]=fille
-  return result
 
 func makeSeqStr(height:int,fille:string):seq[string] =
-  var result = newSeq[string](height)
-  for i in 0..<height:
-      result[i]=fille
-  return result
+  result = newSeq[string](height)
+  for i in 0..<height:result[i]=fille
 
 func makeSeqNum[T](n:int,m:T):seq[T] = 
   result=newSeq[T](n)
@@ -133,21 +114,19 @@ func makeSeqNum[T](n:int,m:T):seq[T] =
 
 #グラフ関連------------------------------------------------------------
 proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
-  var sequence = newSeq[seq[int]](n)
+  result=newSeq[seq[int]](n)
   var a,b:int
   for i in arr:
-    (a,b)=(i[0],i[1])
-    add(sequence[a-1],b-1)
-    add(sequence[b-1],a-1)
-  return  sequence
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
+    result[b].add(a)
 
 proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
-  var sequence = newSeq[seq[int]](n)
+  result=newSeq[seq[int]](n)
   var a,b:int
   for i in arr:
-    (a,b)=(i[0],i[1])
-    add(sequence[a-1],b-1)
-  return  sequence
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
 
 func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
   result=newSeq[seq[bool]]()
@@ -223,23 +202,40 @@ proc maze(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
         que.addLast((i2,j2))
   return dist[gy][gx]
 # ------------------------------------------------------------------
-#debugマクロ
-macro debug(args:varargs[untyped]): typed = 
-  result = newNimNode(nnkStmtList,args)
-  for arg in args:
-    let name = toStrLit(arg)
-    result.add quote do:
-      stdout.write `name`
-      stdout.write ": "
-      stdout.writeLine `arg`
-# 累積和
-func cumsum[T](m:seq[T],n:int):seq[T] = 
+#union-find
+type UnionFind = ref object
+  p:seq[int]
+  rank:seq[int]
+
+proc makeUf(n:int):UnionFind =
+  result=UnionFind(p:newSeq[int](n),rank:newSeq[int](n))
+  for i in 0..<n:result.p[i] = -1
+  for i in 0..<n:result.rank[i] = 1
+
+proc findUf(uf:UnionFind; x: int):int =
+  if (uf.p[x] == -1):return x
+  uf.p[x] = uf.findUf(uf.p[x])
+  return uf.p[x]
+
+proc uniteUf(uf:UnionFind,x,y:int):void =
   var
-    zero:T = 0 
-    arr : seq[T] = makeSeqNum(n+1,zero)
-  for i in 0..<n:
-    arr[i+1]=arr[i]+m[i]
-  return arr
+    a=findUf(uf,x)
+    b=findUf(uf,y)
+  if(a == b):return
+  if(uf.rank[x]>uf.rank[y]):
+    var tmp = 0
+    tmp = a
+    a = b
+    b=tmp
+  if(uf.rank[x]==uf.rank[y]):uf.rank[y] += 1
+  uf.p[a]=b
+
+#累積和
+func cumsum[T](m:seq[T],n:int):seq[T] = 
+  var zero:T = 0 
+  result : seq[T] = makeSeqNum(n+1,zero)
+  for i in 0..<n:result[i+1]=result[i]+m[i]
+
 # 約数列挙
 func divisors(num:int):seq[int] =
     var divisors:seq[int] = @[]
@@ -375,6 +371,7 @@ iterator groupC[T, U](s: openArray[T], f: proc(a: T): U): tuple[k: U, v: seq[T]]
     inc i
   yield (k, v)
 # itertools end
+
 proc group[T](s:seq[T]):seq[seq[T]] =
   var res = newSeq[seq[T]]()
   for (k,v) in groupC(s):res.add(v)
@@ -399,5 +396,6 @@ proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
 
 proc main()=
   echo "Hello, World!"
+
 when isMainModule:
   main()
