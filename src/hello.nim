@@ -222,14 +222,13 @@ proc uniteUf(uf:UnionFind,x,y:int):void =
     a=findUf(uf,x)
     b=findUf(uf,y)
   if(a == b):return
-  if(uf.rank[x]>uf.rank[y]):
+  if(uf.rank[a]>uf.rank[b]):
     var tmp = 0
     tmp = a
     a = b
     b=tmp
-  if(uf.rank[x]==uf.rank[y]):uf.rank[y] += 1
+  if(uf.rank[a]==uf.rank[b]):uf.rank[b] += 1
   uf.p[a]=b
-
 #累積和
 func cumsum[T](m:seq[T],n:int):seq[T] = 
   var zero:T = 0 
