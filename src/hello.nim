@@ -204,23 +204,23 @@ proc maze(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
 # ------------------------------------------------------------------
 #union-find
 type UnionFind = ref object
-  p:seq[int]
+  parent:seq[int]
   rank:seq[int]
 
 proc makeUf(n:int):UnionFind =
-  result=UnionFind(p:newSeq[int](n),rank:newSeq[int](n))
-  for i in 0..<n:result.p[i] = -1
+  result=UnionFind(parent:newSeq[int](n),rank:newSeq[int](n))
+  for i in 0..<n:result.parent[i] = -1
   for i in 0..<n:result.rank[i] = 1
 
-proc findUf(uf:UnionFind; x: int):int =
-  if (uf.p[x] == -1):return x
-  uf.p[x] = uf.findUf(uf.p[x])
-  return uf.p[x]
+proc rootUf(uf:UnionFind; x: int):int =
+  if (uf.parent[x] == -1):return x
+  uf.parent[x] = uf.rootUf(uf.parent[x])
+  return uf.parent[x]
 
 proc uniteUf(uf:UnionFind,x,y:int):void =
   var
-    a=findUf(uf,x)
-    b=findUf(uf,y)
+    a=rootUf(uf,x)
+    b=rootUf(uf,y)
   if(a == b):return
   if(uf.rank[a]>uf.rank[b]):
     var tmp = 0
@@ -228,7 +228,10 @@ proc uniteUf(uf:UnionFind,x,y:int):void =
     a = b
     b=tmp
   if(uf.rank[a]==uf.rank[b]):uf.rank[b] += 1
-  uf.p[a]=b
+  uf.parent[a]=b
+
+proc sameUf(uf:UnionFind,x,y:int):bool =
+  return if(uf.rootUf(x) == uf.rootUf(y)):true else: false
 #累積和
 func cumsum[T](m:seq[T],n:int):seq[T] = 
   var zero:T = 0 
