@@ -155,19 +155,19 @@ template isemptyQ(a:typed):untyped =
 #ダイクストラ
 proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
   var
-    inf=1000000000
     heap = initHeapQueue[(int,int)]()
-    cost=makeSeqNum(n,inf)
+    cost=newSeqWith(n,-1)
+    done=newSeqWith(n,false)
   heap.push((0,start))
   cost[start] = 0
   while(not(heap.isemptyQ)):
-    var
-      (c,pos)=heap.pop()
-    if(cost[pos]<c):continue
+    var(co,pos)=heap.pop()
+    if(done[pos]):continue
+    done[pos] = true
     for (i,d) in arr[pos]:
-      if (cost[i] > c + d):
-        cost[i] = c + d
-        heap.push((c+d,i))
+      if (cost[i] == -1 or cost[i] > cost[pos] + d):
+        cost[i] = d + cost[pos]
+        heap.push((cost[i],i))
   return cost
 
 #幅優先探索
