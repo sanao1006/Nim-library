@@ -242,6 +242,11 @@ proc addBit(bit:Bit,i:int,x:int):void =
 proc rangeBit(bit:Bit,l:int,r:int):int =
   if(l==0):return bit.sumBit(r)
   return bit.sumBit(r) - bit.sumBit(l)
+proc buildBit(bit:Bit,arr:seq[int]):Bit=
+  for ix,i in arr:bit.addBit(ix,i)
+  return bit
+proc makeBit(arr:seq[int],n:int):Bit =
+  return initBit(n).buildBit(arr)
 
 #----------------------------------------------------------
 #累積和
