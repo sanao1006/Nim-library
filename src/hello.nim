@@ -6,7 +6,10 @@ import strformat, macros, std/algorithm, tables, sets, lists,
 
 proc powMod*(a, b, c: int): int {.importcpp: "atcoder::pow_mod(#, @)", header: "<atcoder/all>".}
  
-const MOD = 1000000007 
+const 
+  MOD = 1000000007
+  MOD_ANOTHER = 998244353
+ 
 # 入力テンプレ-------------------------------------------------
 proc g(): string = stdin.readLine
 proc gin(): int = g().parseInt
@@ -37,7 +40,9 @@ template `||`(a,b:untyped):untyped =
 func chmax[T](n: var T, m: T) {.inline.} = n = max(n, m)
 func chmin[T](n: var T, m: T) {.inline.} = n = min(n, m)
 func plus[T](a,b:T):T=return a+b
-func product[T](a,b:T):T=return a*b
+func product[T](a:openArray[T]):T=
+  result=1
+  for i in a:result = result * i 
 func subtract[T](a,b:T):T=return a-b
 func zipwith[T1,T2,T3](f: proc(a:T1,b:T2):T3, xs:openarray[T1],ys:openarray[T2]): seq[T1] =
     newSeq(result, xs.len)
@@ -104,14 +109,6 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
     for j in 0..<width:
       result[i][j]=fille
 
-func makeSeqStr(height:int,fille:string):seq[string] =
-  result = newSeq[string](height)
-  for i in 0..<height:result[i]=fille
-
-func makeSeqNum[T](n:int,m:T):seq[T] = 
-  result=newSeq[T](n)
-  for i in 0..<n:result[i]=m
-
 #グラフ関連------------------------------------------------------------
 proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
   result=newSeq[seq[int]](n)
@@ -130,28 +127,24 @@ proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] =
 
 func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
   result=newSeq[seq[bool]]()
-  for i in 0..<n:result.add(makeSeqNum(n,false))
+  for i in 0..<n:result.add(newSeqWith(n,false))
   for i in arr:
     result[i[0]-1][i[1]-1]=true
     result[i[1]-1][i[0]-1]=true
     
-proc makeDiGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
+proc makeDiGraphWithCost[T](arr:seq[seq[T]],n,m:int):seq[seq[(int,T)]] = 
   result=newSeq[seq[(int,int)]](n)
-  for i in 0..<m:
-    var inp = gInts()
-    result[inp[0]-1].add((inp[1]-1,inp[2]))
+  for inp in arr:result[inp[0]].add((inp[1]-1.int,inp[2]))
 
-proc makeUnGraphWithCost(n,m:int):seq[seq[(int,int)]] = 
+proc makeUnGraphWithCost(arr:seq[seq[int]],n,m:int):seq[seq[(int,int)]] = 
   result=newSeq[seq[(int,int)]](n)
-  for i in 0..<m:
-    var inp = gInts()
-    result[inp[0]-1].add((inp[1]-1,inp[2]))
-    result[inp[1]-1].add((inp[0]-1,inp[2]))
+  for inp in arr:
+    result[inp[0]].add((inp[1],inp[2]))
+    result[inp[1]].add((inp[0],inp[2]))
 
 template isemptyQ(a:typed):untyped = 
   if(a.len==0):true
   else:false
-
 #ダイクストラ
 proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
   var
@@ -169,11 +162,10 @@ proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
         cost[i] = d + cost[pos]
         heap.push((cost[i],i))
   return cost
-
 #幅優先探索
 func bfs(G:seq[seq[int]],n:int,start:int):seq[int] = 
   var
-    dist = makeSeqNum(n,-1)
+    dist = newSeqWith(n,-1)
     que = initDeque[int]()
   dist[start] = 0
   que.addLast(start)
@@ -186,7 +178,7 @@ func bfs(G:seq[seq[int]],n:int,start:int):seq[int] =
   return  dist
 
 #迷路探索
-proc maze(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
+proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
   var 
     dist=makeSeqNums(R,C,-1)
     que=initDeque[(int,int)]()
@@ -222,31 +214,49 @@ proc uniteUf(uf:UnionFind,x,y:int):void =
     a=rootUf(uf,x)
     b=rootUf(uf,y)
   if(a == b):return
-  if(uf.rank[a]>uf.rank[b]):
-    var tmp = 0
-    tmp = a
-    a = b
-    b=tmp
+  if(uf.rank[a]>uf.rank[b]):swap(a,b)
   if(uf.rank[a]==uf.rank[b]):uf.rank[b] += 1
   uf.parent[a]=b
 
 proc sameUf(uf:UnionFind,x,y:int):bool =
   return if(uf.rootUf(x) == uf.rootUf(y)):true else: false
+#----------------------------------------------------------
+#binary indexed tree
+type Bit = ref object 
+  size:int
+  tree:seq[int]
+proc initBit(n:int):Bit =
+  result = Bit(size:n,tree:newSeqWith(n+1,0))
+proc sumBit(bit:Bit,i:int):int = 
+  result=0
+  var k = i
+  k -= 1
+  while(k>=0):
+    result += bit.tree[k]
+    k = (k and (k+1)) - 1
+proc addBit(bit:Bit,i:int,x:int):void =
+  var k = i
+  while(k < bit.size):
+    bit.tree[k] += x
+    k = (k or (k+1))
+proc rangeBit(bit:Bit,l:int,r:int):int =
+  if(l==0):return bit.sumBit(r)
+  return bit.sumBit(r) - bit.sumBit(l)
+
+#----------------------------------------------------------
 #累積和
 func cumsum[T](m:seq[T],n:int):seq[T] = 
   var zero:T = 0 
-  result : seq[T] = makeSeqNum(n+1,zero)
+  result : seq[T] = newSeqWith(n+1,zero)
   for i in 0..<n:result[i+1]=result[i]+m[i]
-
 # 約数列挙
 func divisors(num:int):seq[int] =
-    var divisors:seq[int] = @[]
+    result=newSeq[int]()
     for i in countup(1,toInt(pow(toFloat(num),0.5))):
         if num mod i != 0:continue
-        add(divisors,i)
-        if((num div i) != i):add(divisors,(num div i))
-    divisors.sort()
-    return divisors
+        result.add(i)
+        if((num div i) != i):result.add((num div i))
+    result.sort()
 #素数判定
 func isPrime(num:int):bool = 
   if(num <= 1): return false
@@ -257,25 +267,20 @@ func isPrime(num:int):bool =
     return true
 #素数列挙
 func primeRekkyo(n:int):seq[int] = 
-  var list:seq[int] = @[]
   for i in 0..n:
-    if(isPrime(i)):
-      add(list,i)
-  return list
+    if(isPrime(i)):result.add(i)
 # 素因数分解
 func primeFactorization(n:var int):seq[int]=
-  var res:seq[int]
   var i:int=2
   while i<=int sqrt(float n):
     if n.mod(i)!=0:i+=1
     else:
       n=n.div(i)
-      res.add(i)
-  if n!=1:res.add(n)
-  return res
+      result.add(i)
+  if n!=1:result.add(n)
 #エラトスネテスの篩
 func Eratosthenes(N:int):seq[int] =
-    var isprime = makeSeqNum(N+1,true)
+    var isprime = newSeqWith(N+1,true)
     isprime[0] = false
     isprime[1] = false
     for p in 2..<N+1:
@@ -285,7 +290,7 @@ func Eratosthenes(N:int):seq[int] =
             isprime[q] = false
             q += p
     return(zip((tail isprime),(1..N).toSeq)).filterIt(it[0]==true).mapIt(it[1])
- 
+
 #順列全探索用  quoted from "https://forum.nim-lang.org/t/2812"
 proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
   result = newSeq[seq[T]]()
@@ -300,7 +305,6 @@ proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
 proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
   var use = newSeq[bool](a.len)
   perm(a, n, use)
-
 
 proc nCr(n:int,r:int):int = 
   if(r==0 or r==n):return 1
@@ -322,8 +326,7 @@ iterator prod[T](s: openArray[T], repeat: Positive): seq[T] =
           counters[i] = 0
           dec i
         else: break
-        if i < 0:
-          break outer
+        if i < 0:break outer
 
 iterator prod[T, U](s1: openArray[T], s2: openArray[U]): tuple[a: T, b: U] =
   for a in s1:
@@ -372,7 +375,7 @@ iterator groupC[T, U](s: openArray[T], f: proc(a: T): U): tuple[k: U, v: seq[T]]
       v.add s[i]
     inc i
   yield (k, v)
-# itertools end
+#itertools end--------------------------------------------
 
 proc group[T](s:seq[T]):seq[seq[T]] =
   var res = newSeq[seq[T]]()
@@ -383,20 +386,18 @@ func compress[T](arr:seq[T]):seq[T]=
   var 
     c:seq[T] = arr.toHashSet().toSeq().sorted()
     zero:T = 0
-    res = makeSeqNum(arr.len,zero)
+    res = newSeqWith(arr.len,zero)
   for i in 0..<arr.len:
     res[i]= c.lowerBound(arr[i],system.cmp[int])
   return res  
 #tuple sort
-proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
-  arr.sortedByIt(it.fst).mapIt((it.fst,it.snd))
+proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.fst).mapIt((it.fst,it.snd))
 
-proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] =
-  return arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
+proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
 
 # main処理----------------------------------------------------------
 
-proc main()=
+proc main() =
   echo "Hello, World!"
 
 when isMainModule:
