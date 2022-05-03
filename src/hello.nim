@@ -110,7 +110,7 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
       result[i][j]=fille
 
 #グラフ関連------------------------------------------------------------
-proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
+proc makeUndirectGraph(arr:seq[seq[int]],n:int):seq[seq[int]] = 
   result=newSeq[seq[int]](n)
   var a,b:int
   for i in arr:
@@ -118,7 +118,7 @@ proc makeUndirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] =
     result[a].add(b)
     result[b].add(a)
 
-proc makeDirectGraph(arr:seq[seq[int]],n:int,m:int):seq[seq[int]] = 
+proc makeDirectGraph(arr:seq[seq[int]],n:int):seq[seq[int]] = 
   result=newSeq[seq[int]](n)
   var a,b:int
   for i in arr:
@@ -132,11 +132,11 @@ func path(arr:seq[seq[int]],n:int):seq[seq[bool]] =
     result[i[0]-1][i[1]-1]=true
     result[i[1]-1][i[0]-1]=true
     
-proc makeDiGraphWithCost[T](arr:seq[seq[T]],n,m:int):seq[seq[(int,T)]] = 
+proc makeDiGraphWithCost[T](arr:seq[seq[T]],n:int):seq[seq[(int,T)]] = 
   result=newSeq[seq[(int,int)]](n)
   for inp in arr:result[inp[0]].add((inp[1]-1.int,inp[2]))
 
-proc makeUnGraphWithCost(arr:seq[seq[int]],n,m:int):seq[seq[(int,int)]] = 
+proc makeUnGraphWithCost(arr:seq[seq[int]],n:int):seq[seq[(int,int)]] = 
   result=newSeq[seq[(int,int)]](n)
   for inp in arr:
     result[inp[0]].add((inp[1],inp[2]))
@@ -163,9 +163,10 @@ proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
         heap.push((cost[i],i))
   return cost
 #幅優先探索
-func bfs(G:seq[seq[int]],n:int,start:int):seq[int] = 
+func bfs(G:seq[seq[int]],n:int,start:int):(seq[int],seq[int]) = 
   var
     dist = newSeqWith(n,-1)
+    prev = newSeqWith(n,-1)
     que = initDeque[int]()
   dist[start] = 0
   que.addLast(start)
@@ -174,8 +175,9 @@ func bfs(G:seq[seq[int]],n:int,start:int):seq[int] =
     for nv in G[v]:
       if(dist[nv] != -1):continue
       dist[nv] = dist[v] + 1
+      prev[nv] = v
       que.addLast(nv)
-  return  dist
+  return  (dist,prev)
 
 #迷路探索
 proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=

@@ -8,5 +8,5 @@ srcDir        = "src"
 
 bin = @["hello"]
 # Dependencies
-
+backend = "cpp"
 requires "nim >= 1.6.4"
