@@ -286,7 +286,7 @@ func primeFactorization(n:var int):seq[int]=
       result.add(i)
   if n!=1:result.add(n)
 #エラトスネテスの篩
-func Eratosthenes(N:int):seq[int] =
+func erato(N:int):seq[int] =
     var isprime = newSeqWith(N+1,true)
     isprime[0] = false
     isprime[1] = false
@@ -335,23 +335,7 @@ iterator prod[T](s: openArray[T], repeat: Positive): seq[T] =
         else: break
         if i < 0:break outer
 
-iterator prod[T, U](s1: openArray[T], s2: openArray[U]): tuple[a: T, b: U] =
-  for a in s1:
-    for b in s2:
-      yield (a, b)
 
-iterator prod[T, U, V](s1: openArray[T], s2: openArray[U], s3: openArray[V]):tuple[a: T, b: U, c: V] =
-  for a in s1:
-    for b in s2:
-      for c in s3:
-        yield (a, b, c)
-
-iterator prod[T, U, V, W](s1: openArray[T], s2: openArray[U], s3: openArray[V],s4: openArray[W]): tuple[a: T, b: U, c: V, d: W] =
-  for a in s1:
-    for b in s2:
-      for c in s3:
-        for d in s4:
-          yield (a, b, c, d)
 iterator groupC[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
   var
     k = s[0]
