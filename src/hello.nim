@@ -2,7 +2,7 @@
 {.optimization:speed.}
 import strformat, macros, std/algorithm, tables, sets, lists,
     intsets, critbits, sequtils, strutils, std/math, times,
-    sugar, options, bitops, heapqueue, future, std/deques
+    sugar, options, bitops, heapqueue, future, std/deques,os
 
 proc powMod*(a, b, c: int): int {.importcpp: "atcoder::pow_mod(#, @)", header: "<atcoder/all>".}
  
@@ -110,74 +110,79 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
       result[i][j]=fille
 
 #グラフ関連------------------------------------------------------------
-proc makeUndirectGraph(arr:seq[seq[int]],n:int):seq[seq[int]] = 
-  result=newSeq[seq[int]](n)
-  var a,b:int
-  for i in arr:
-    (a,b)=(i[0]-1,i[1]-1)
-    result[a].add(b)
-    result[b].add(a)
 
-proc makeDirectGraph(arr:seq[seq[int]],n:int):seq[seq[int]] = 
-  result=newSeq[seq[int]](n)
-  var a,b:int
+template isemptyQ(a:typed):untyped = 
+  if(a.len==0):true
+  else:false
+type Edge = seq[seq[int]]
+type Graph = ref object of RootObj
+  e:Edge
+  edges:seq[seq[int]]
+type GraphWithCost = ref object of Graph
+  edgesWithCost:seq[seq[(int,int)]]
+  cost:seq[int]
+type ShortestPath = tuple 
+  dist:seq[int]
+  prev:seq[int]
+proc initEdge(m:int):Edge=gIntsNs(m)
+func initUG(arr:Edge,n:int,m:int):Graph =
+  result=Graph(e:arr,edges:newSeq[seq[int]](n))
   for i in arr:
-    (a,b)=(i[0]-1,i[1]-1)
-    result[a].add(b)
-
-func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
+    var(first,back)=(i[0]-1,i[1]-1)
+    result.edges[first].add(back)
+    result.edges[back].add(first)
+func initDG[T](arr:Edge,n:int,m:int):Graph =
+  result=Graph(e:arr.initEdge(m),edges:newSeq[seq[T]](n))
+  for i in arr:
+    var(first,back)=(i[0]-1,i[1]-1)
+    result.edges[first].add(back)
+func path(arr:Edge,n:int):seq[seq[bool]] = 
   result=newSeq[seq[bool]]()
   for i in 0..<n:result.add(newSeqWith(n,false))
   for i in arr:
     result[i[0]-1][i[1]-1]=true
     result[i[1]-1][i[0]-1]=true
-    
-proc makeDiGraphWithCost[T](arr:seq[seq[T]],n:int):seq[seq[(int,T)]] = 
-  result=newSeq[seq[(int,int)]](n)
-  for inp in arr:result[inp[0]].add((inp[1]-1.int,inp[2]))
 
-proc makeUnGraphWithCost(arr:seq[seq[int]],n:int):seq[seq[(int,int)]] = 
-  result=newSeq[seq[(int,int)]](n)
+func initDGwithC(arr:Edge,n:int):GraphWithCost = 
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
+  for inp in arr:result.edgesWithCost[inp[0]].add((inp[1]-1.int,inp[2]))
+
+func initUGwithC(arr:Edge,n:int):GraphWithCost = 
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
   for inp in arr:
-    result[inp[0]].add((inp[1],inp[2]))
-    result[inp[1]].add((inp[0],inp[2]))
-
-template isemptyQ(a:typed):untyped = 
-  if(a.len==0):true
-  else:false
+    result.edgesWithCost[inp[0]].add((inp[1]-1,inp[2]))
+    result.edgesWithCost[inp[1]].add((inp[0]-1,inp[2]))
 #ダイクストラ
-proc dijkstra(arr:seq[seq[(int,int)]],start:int,n:int):seq[int] =
+func dijkstra(arr:GraphWithCost,start:int,n:int):GraphWithCost =
   var
     heap = initHeapQueue[(int,int)]()
-    cost=newSeqWith(n,-1)
     done=newSeqWith(n,false)
   heap.push((0,start))
-  cost[start] = 0
+  arr.cost[start] = 0
   while(not(heap.isemptyQ)):
     var(co,pos)=heap.pop()
     if(done[pos]):continue
     done[pos] = true
-    for (i,d) in arr[pos]:
-      if (cost[i] == -1 or cost[i] > cost[pos] + d):
-        cost[i] = d + cost[pos]
-        heap.push((cost[i],i))
-  return cost
+    for (i,d) in arr.edgesWithCost[pos]:
+      if (arr.cost[i] == -1 or arr.cost[i] > arr.cost[pos] + d):
+        arr.cost[i] = d + arr.cost[pos]
+        heap.push((arr.cost[i],i))
+  return arr
 #幅優先探索
-func bfs(G:seq[seq[int]],n:int,start:int):(seq[int],seq[int]) = 
+func bfs(G:Graph,n:int,start:int):ShortestPath = 
+  result=ShortestPath((dist:newSeqWith(n,-1),prev:newSeqWith(n,-1)))
   var
-    dist = newSeqWith(n,-1)
-    prev = newSeqWith(n,-1)
     que = initDeque[int]()
-  dist[start] = 0
+  result.dist[start] = 0
   que.addLast(start)
   while(not(que.isemptyQ)):
     var v = que.popFirst()
-    for nv in G[v]:
-      if(dist[nv] != -1):continue
-      dist[nv] = dist[v] + 1
-      prev[nv] = v
+    for nv in G.edges[v]:
+      if(result.dist[nv] != -1):continue
+      result.dist[nv] = result.dist[v] + 1
+      result.prev[nv] = v
       que.addLast(nv)
-  return  (dist,prev)
+  return  result
 
 #迷路探索
 proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
@@ -286,7 +291,7 @@ func primeFactorization(n:var int):seq[int]=
       result.add(i)
   if n!=1:result.add(n)
 #エラトスネテスの篩
-func erato(N:int):seq[int] =
+func Eratosthenes(N:int):seq[int] =
     var isprime = newSeqWith(N+1,true)
     isprime[0] = false
     isprime[1] = false
@@ -388,8 +393,12 @@ proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.s
 
 # main処理----------------------------------------------------------
 
-proc main() =
-  echo "Hello, World!"
-
+proc main()=
+  var n,m:int
+  (n,m)=gInts()
+  var 
+    arr=initEdge(m)
+    G=arr.initUG(n,m)
+  echo G.edges
 when isMainModule:
   main()

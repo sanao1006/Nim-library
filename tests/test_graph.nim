@@ -7,6 +7,16 @@
 
 import unittest
 
-import hello
-test "can add":
-  check add(5, 5) == 10
+include lib_in,lib_graph,module
+
+
+suite "graph":
+  setup:
+    var 
+      arr:Edge = @[@[1,2],@[2,3]]
+      n:int = 3
+      m:int = 2
+    var k = Graph(edges:newSeqWith(n,newSeqWith(2,0)))
+  test "initUG":
+    k.edges =  @[ @[1], @[0,2], @[1] ] 
+    check(arr.initUG(n,m).edges == k.edges)
