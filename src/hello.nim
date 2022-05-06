@@ -99,7 +99,11 @@ func transepose(arr:seq[string]):seq[string] =
       tmpArr.add(arr[j][i])
     res.add(tmpArr)
   return res.mapIt(it.join())
-  
+
+template isemptyQ(a:typed):untyped = 
+  if(a.len==0):true
+  else:false
+
 proc toInt(c:char): int = return int(c) - int('0')
 # 配列埋め----------------------------------------------------------
 
@@ -111,65 +115,72 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
 
 #グラフ関連------------------------------------------------------------
 
-template isemptyQ(a:typed):untyped = 
-  if(a.len==0):true
-  else:false
-type Edge = seq[seq[int]]
-type Graph = ref object of RootObj
-  e:Edge
-  edges:seq[seq[int]]
-type GraphWithCost = ref object of Graph
-  edgesWithCost:seq[seq[(int,int)]]
+type Edge = tuple
+  to:int
+  c:int
+
+type GraphWithCost = ref object
+  edgesWithCost:seq[seq[Edge]]
   cost:seq[int]
+
 type ShortestPath = tuple 
   dist:seq[int]
   prev:seq[int]
-proc initEdge(m:int):Edge=gIntsNs(m)
-func initUG(arr:Edge,n:int,m:int):Graph =
-  result=Graph(e:arr,edges:newSeq[seq[int]](n))
+
+proc initUG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
+  result=newSeq[seq[int]](n)
+  var a,b:int
   for i in arr:
-    var(first,back)=(i[0]-1,i[1]-1)
-    result.edges[first].add(back)
-    result.edges[back].add(first)
-func initDG[T](arr:Edge,n:int,m:int):Graph =
-  result=Graph(e:arr.initEdge(m),edges:newSeq[seq[T]](n))
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
+    result[b].add(a)
+
+proc initDG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
+  result=newSeq[seq[int]](n)
+  var a,b:int
   for i in arr:
-    var(first,back)=(i[0]-1,i[1]-1)
-    result.edges[first].add(back)
-func path(arr:Edge,n:int):seq[seq[bool]] = 
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
+
+func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
   result=newSeq[seq[bool]]()
   for i in 0..<n:result.add(newSeqWith(n,false))
   for i in arr:
     result[i[0]-1][i[1]-1]=true
     result[i[1]-1][i[0]-1]=true
 
-func initDGwithC(arr:Edge,n:int):GraphWithCost = 
-  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
-  for inp in arr:result.edgesWithCost[inp[0]].add((inp[1]-1.int,inp[2]))
-
-func initUGwithC(arr:Edge,n:int):GraphWithCost = 
+func initDGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
   result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
   for inp in arr:
-    result.edgesWithCost[inp[0]].add((inp[1]-1,inp[2]))
-    result.edgesWithCost[inp[1]].add((inp[0]-1,inp[2]))
+    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
+    result.edgesWithCost[`from`].add((edge.to,edge.c))
+
+func initUGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
+  for inp in arr:
+    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
+    result.edgesWithCost[`from`].add((edge.to,edge.c))
+    swap(`from`,edge.to)
+    result.edgesWithCost[`from`].add((edge.to,edge.c))
+
 #ダイクストラ
-func dijkstra(arr:GraphWithCost,start:int,n:int):GraphWithCost =
+func dijkstra(arr:GraphWithCost,start:int,n:int):seq[int] =
   var
     heap = initHeapQueue[(int,int)]()
     done=newSeqWith(n,false)
   heap.push((0,start))
   arr.cost[start] = 0
   while(not(heap.isemptyQ)):
-    var(co,pos)=heap.pop()
+    let(co,pos)=heap.pop() 
     if(done[pos]):continue
     done[pos] = true
     for (i,d) in arr.edgesWithCost[pos]:
       if (arr.cost[i] == -1 or arr.cost[i] > arr.cost[pos] + d):
         arr.cost[i] = d + arr.cost[pos]
         heap.push((arr.cost[i],i))
-  return arr
-#幅優先探索
-func bfs(G:Graph,n:int,start:int):ShortestPath = 
+  return arr.cost
+
+func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath = 
   result=ShortestPath((dist:newSeqWith(n,-1),prev:newSeqWith(n,-1)))
   var
     que = initDeque[int]()
@@ -177,12 +188,11 @@ func bfs(G:Graph,n:int,start:int):ShortestPath =
   que.addLast(start)
   while(not(que.isemptyQ)):
     var v = que.popFirst()
-    for nv in G.edges[v]:
+    for nv in G[v]:
       if(result.dist[nv] != -1):continue
       result.dist[nv] = result.dist[v] + 1
       result.prev[nv] = v
       que.addLast(nv)
-  return  result
 
 #迷路探索
 proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
