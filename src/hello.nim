@@ -115,17 +115,16 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
 
 #グラフ関連------------------------------------------------------------
 
-type Edge = tuple
-  to:int
-  c:int
-
-type GraphWithCost = ref object
-  edgesWithCost:seq[seq[Edge]]
-  cost:seq[int]
-
-type ShortestPath = tuple 
-  dist:seq[int]
-  prev:seq[int]
+type 
+  Edge = tuple
+    to:int
+    c:int
+  GraphWithCost = ref object
+    edgesWithCost:seq[seq[Edge]]
+    cost:seq[int]
+  ShortestPath = tuple 
+    dist:seq[int]
+    prev:seq[int]
 
 proc initUG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
   result=newSeq[seq[int]](n)
@@ -301,7 +300,7 @@ func primeFactorization(n:var int):seq[int]=
       result.add(i)
   if n!=1:result.add(n)
 #エラトスネテスの篩
-func Eratosthenes(N:int):seq[int] =
+func erato(N:int):seq[int] =
     var isprime = newSeqWith(N+1,true)
     isprime[0] = false
     isprime[1] = false
@@ -404,11 +403,8 @@ proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.s
 # main処理----------------------------------------------------------
 
 proc main()=
-  var n,m:int
-  (n,m)=gInts()
-  var 
-    arr=initEdge(m)
-    G=arr.initUG(n,m)
-  echo G.edges
+  echo "Hello, World!"
+
+
 when isMainModule:
   main()

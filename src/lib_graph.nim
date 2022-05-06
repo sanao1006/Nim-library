@@ -11,17 +11,16 @@ template isemptyQ(a:typed):untyped =
   else:false
 
 #from here--------------------------------------------------------------------
-type Edge = tuple
-  to:int
-  c:int
-
-type GraphWithCost = ref object
-  edgesWithCost:seq[seq[Edge]]
-  cost:seq[int]
-
-type ShortestPath = tuple 
-  dist:seq[int]
-  prev:seq[int]
+type 
+  Edge = tuple
+    to:int
+    c:int
+  GraphWithCost = ref object
+    edgesWithCost:seq[seq[Edge]]
+    cost:seq[int]
+  ShortestPath = tuple 
+    dist:seq[int]
+    prev:seq[int]
 
 proc initUG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
   result=newSeq[seq[int]](n)
