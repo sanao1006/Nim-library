@@ -121,7 +121,6 @@ type
     c:int
   GraphWithCost = ref object
     edgesWithCost:seq[seq[Edge]]
-    cost:seq[int]
   ShortestPath = tuple 
     dist:seq[int]
     prev:seq[int]
@@ -149,35 +148,34 @@ func path(arr:seq[seq[int]],n:int):seq[seq[bool]] =
     result[i[1]-1][i[0]-1]=true
 
 func initDGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
-  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
   for inp in arr:
     var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
     result.edgesWithCost[`from`].add((edge.to,edge.c))
 
 func initUGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
-  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n),cost:newSeqWith(n,-1))
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
   for inp in arr:
     var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
-    result.edgesWithCost[`from`].add((edge.to,edge.c))
+    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
     swap(`from`,edge.to)
-    result.edgesWithCost[`from`].add((edge.to,edge.c))
+    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
 
 #ダイクストラ
 func dijkstra(arr:GraphWithCost,start:int,n:int):seq[int] =
-  var
+  var 
     heap = initHeapQueue[(int,int)]()
-    done=newSeqWith(n,false)
+    cost=newSeqWith(n,int.high)
   heap.push((0,start))
-  arr.cost[start] = 0
+  cost[start] = 0
   while(not(heap.isemptyQ)):
-    let(co,pos)=heap.pop() 
-    if(done[pos]):continue
-    done[pos] = true
+    var(c,pos)=heap.pop()
+    if(cost[pos]<c):continue
     for (i,d) in arr.edgesWithCost[pos]:
-      if (arr.cost[i] == -1 or arr.cost[i] > arr.cost[pos] + d):
-        arr.cost[i] = d + arr.cost[pos]
-        heap.push((arr.cost[i],i))
-  return arr.cost
+      if (cost[i] > c + d):
+        cost[i] = c+d
+        heap.push((c+d,i))
+  return cost
 
 func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath = 
   result=ShortestPath((dist:newSeqWith(n,-1),prev:newSeqWith(n,-1)))
@@ -404,7 +402,6 @@ proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.s
 
 proc main()=
   echo "Hello, World!"
-
 
 when isMainModule:
   main()
