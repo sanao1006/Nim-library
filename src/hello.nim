@@ -14,6 +14,7 @@ const
 proc g(): string = stdin.readLine
 proc gin(): int = g().parseInt
 proc gInts(): seq[int] = g().split.map(parseInt)
+proc gss():seq[int]=g().insertSep(sep=' ',1).split.map(parseInt)
 proc gIntsN(n:int): seq[int] = 
   result=newSeq[int](n)
   for i in 0..n-1:result[i]=gin()
@@ -112,102 +113,7 @@ func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
   for i in 0..<height:
     for j in 0..<width:
       result[i][j]=fille
-
-#グラフ関連------------------------------------------------------------
-
-type 
-  Edge = tuple
-    to:int
-    c:int
-  GraphWithCost = ref object
-    edgesWithCost:seq[seq[Edge]]
-  ShortestPath = tuple 
-    dist:seq[int]
-    prev:seq[int]
-
-proc initUG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
-  result=newSeq[seq[int]](n)
-  var a,b:int
-  for i in arr:
-    (a,b)=(i[0]-1,i[1]-1)
-    result[a].add(b)
-    result[b].add(a)
-
-proc initDG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
-  result=newSeq[seq[int]](n)
-  var a,b:int
-  for i in arr:
-    (a,b)=(i[0]-1,i[1]-1)
-    result[a].add(b)
-
-func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
-  result=newSeq[seq[bool]]()
-  for i in 0..<n:result.add(newSeqWith(n,false))
-  for i in arr:
-    result[i[0]-1][i[1]-1]=true
-    result[i[1]-1][i[0]-1]=true
-
-func initDGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
-  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
-  for inp in arr:
-    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
-    result.edgesWithCost[`from`].add((edge.to,edge.c))
-
-func initUGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
-  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
-  for inp in arr:
-    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
-    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
-    swap(`from`,edge.to)
-    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
-
-#ダイクストラ
-func dijkstra(arr:GraphWithCost,start:int,n:int):seq[int] =
-  var 
-    heap = initHeapQueue[(int,int)]()
-    cost=newSeqWith(n,int.high)
-  heap.push((0,start))
-  cost[start] = 0
-  while(not(heap.isemptyQ)):
-    var(c,pos)=heap.pop()
-    if(cost[pos]<c):continue
-    for (i,d) in arr.edgesWithCost[pos]:
-      if (cost[i] > c + d):
-        cost[i] = c+d
-        heap.push((c+d,i))
-  return cost
-
-func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath = 
-  result=ShortestPath((dist:newSeqWith(n,-1),prev:newSeqWith(n,-1)))
-  var
-    que = initDeque[int]()
-  result.dist[start] = 0
-  que.addLast(start)
-  while(not(que.isemptyQ)):
-    var v = que.popFirst()
-    for nv in G[v]:
-      if(result.dist[nv] != -1):continue
-      result.dist[nv] = result.dist[v] + 1
-      result.prev[nv] = v
-      que.addLast(nv)
-
-#迷路探索
-proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
-  var 
-    dist=makeSeqNums(R,C,-1)
-    que=initDeque[(int,int)]()
-  que.addLast((sy,sx))
-  dist[sy][sx]=0
-  while(not(que.isemptyQ)):
-    var(ny,nx)=que.popFirst()
-    for (i2,j2) in ([[ny+1,nx],[ny-1,nx],[ny,nx+1],[ny,nx-1]]):
-      if(not((i2>=0 and i2 < R) and (j2 >= 0 and j2 < C))):continue
-      if(field[ny][nx]==wall):continue
-      if(dist[i2][j2] == -1):
-        dist[i2][j2]=dist[ny][nx] + 1
-        que.addLast((i2,j2))
-  return dist[gy][gx]
-# ------------------------------------------------------------------
+#------------------------------------------------------------------
 #union-find
 type UnionFind = ref object
   parent:seq[int]
@@ -234,7 +140,7 @@ proc uniteUf(uf:UnionFind,x,y:int):void =
 
 proc sameUf(uf:UnionFind,x,y:int):bool =
   return if(uf.rootUf(x) == uf.rootUf(y)):true else: false
-#----------------------------------------------------------
+
 #binary indexed tree
 type Bit = ref object 
   size:int
@@ -261,6 +167,119 @@ proc buildBit(bit:Bit,arr:seq[int]):Bit=
   return bit
 proc makeBit(arr:seq[int],n:int):Bit =
   return initBit(n).buildBit(arr)
+
+#グラフ関連----------------------------------------------------------
+type 
+  Edge = tuple
+    to:int
+    c:int
+  GraphWithCost = ref object
+    edgesWithCost:seq[seq[Edge]]
+  ShortestPath = tuple 
+    dist:seq[int]
+    prev:seq[int]
+
+# init Undirected Graph 0-indexed
+proc initUG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
+  result=newSeq[seq[int]](n)
+  var a,b:int
+  for i in arr:
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
+    result[b].add(a)
+
+# init Directed Graph 0-indexed
+proc initDG(arr:seq[seq[int]],n:int):seq[seq[int]] = 
+  result=newSeq[seq[int]](n)
+  var a,b:int
+  for i in arr:
+    (a,b)=(i[0]-1,i[1]-1)
+    result[a].add(b)
+
+func path(arr:seq[seq[int]],n:int):seq[seq[bool]] = 
+  result=newSeq[seq[bool]]()
+  for i in 0..<n:result.add(newSeqWith(n,false))
+  for i in arr:
+    result[i[0]-1][i[1]-1]=true
+    result[i[1]-1][i[0]-1]=true
+
+# init Directed Graph 0-indexed
+func initDGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
+  for inp in arr:
+    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
+    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
+
+# init Undirected Graph 0-indexed
+func initUGwithC(arr:seq[seq[int]],n:int):GraphWithCost = 
+  result=GraphWithCost(edgesWithCost:newSeq[seq[(int,int)]](n))
+  for inp in arr:
+    var (`from`, edge) = (inp[0], Edge((to:inp[1], c:inp[2])))
+    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
+    swap(`from`,edge.to)
+    result.edgesWithCost[`from`-1].add((edge.to-1,edge.c))
+ 
+#dijkstra
+func dijkstra(arr:GraphWithCost,start:int,n:int):seq[int] =
+  var 
+    heap = initHeapQueue[(int,int)]()
+    cost=newSeqWith(n,int.high)
+  heap.push((0,start))
+  cost[start] = 0
+  while(not(heap.isemptyQ)):
+    var(c,pos)=heap.pop()
+    if(cost[pos]<c):continue
+    for (i,d) in arr.edgesWithCost[pos]:
+      if (cost[i] > c + d):
+        cost[i] = c+d
+        heap.push((c+d,i))
+  return cost
+#breath-first search
+func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath = 
+  result=ShortestPath((dist:newSeqWith(n,-1),prev:newSeqWith(n,-1)))
+  var
+    que = initDeque[int]()
+  result.dist[start] = 0
+  que.addLast(start)
+  while(not(que.isemptyQ)):
+    var v = que.popFirst()
+    for nv in G[v]:
+      if(result.dist[nv] != -1):continue
+      result.dist[nv] = result.dist[v] + 1
+      result.prev[nv] = v
+      que.addLast(nv)
+
+# maze search by BFS
+proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
+  var 
+    dist=makeSeqNums(R,C,-1)
+    que=initDeque[(int,int)]()
+  que.addLast((sy,sx))
+  dist[sy][sx]=0
+  while(not(que.isemptyQ)):
+    var(ny,nx)=que.popFirst()
+    for (i2,j2) in ([[ny+1,nx],[ny-1,nx],[ny,nx+1],[ny,nx-1]]):
+      if(not((i2>=0 and i2 < R) and (j2 >= 0 and j2 < C))):continue
+      if(field[ny][nx]==wall):continue
+      if(dist[i2][j2] == -1):
+        dist[i2][j2]=dist[ny][nx] + 1
+        que.addLast((i2,j2))
+  return dist[gy][gx]
+
+proc kruskal(G:GraphWithCost,n:int):int =
+  var aa = newSeq[tuple[u:int,v:int,co:int]](n)
+  for ix,i in G.edgesWithCost:
+    for j in i:
+      aa.add((ix,j.to,j.c))
+  result = 0
+  var
+    nn = aa.sortedByIt((it.co))
+    uf = makeUf(n)  
+  for i in nn:
+    var(u,v,c)=(i[0],i[1],i[2])
+    if(uf.sameUf(u,v)):continue
+    uf.uniteUf(u,v)
+    result += c
 
 #----------------------------------------------------------
 #累積和
@@ -398,10 +417,13 @@ proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.f
 
 proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
 
+
+
 # main処理----------------------------------------------------------
 
 proc main()=
-  echo "Hello, World!"
+  var s = gss()
+  echo s[1]
 
 when isMainModule:
   main()
