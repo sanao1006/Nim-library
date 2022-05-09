@@ -274,7 +274,7 @@ proc kruskal(G:GraphWithCost,n:int):int =
   result = 0
   var
     nn = aa.sortedByIt((it.co))
-    uf = makeUf(n)  
+    uf = makeUf(n)
   for i in nn:
     var(u,v,c)=(i[0],i[1],i[2])
     if(uf.sameUf(u,v)):continue
@@ -283,10 +283,13 @@ proc kruskal(G:GraphWithCost,n:int):int =
 
 #----------------------------------------------------------
 #累積和
-func cumsum[T](m:seq[T],n:int):seq[T] = 
-  var zero:T = 0 
-  result : seq[T] = newSeqWith(n+1,zero)
+func cumsum[int](m:seq[int],n:int):seq[int] =
+  result : seq[int] = newSeqWith(n+1,0)
   for i in 0..<n:result[i+1]=result[i]+m[i]
+func cumsum[float](m:seq[float],n:int):seq[float] =
+  result : seq[float] = newSeqWith(n+1,0)
+  for i in 0..<n:result[i+1]=result[i]+m[i]
+
 # 約数列挙
 func divisors(num:int):seq[int] =
     result=newSeq[int]()

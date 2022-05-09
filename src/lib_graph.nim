@@ -103,3 +103,19 @@ proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
         dist[i2][j2]=dist[ny][nx] + 1
         que.addLast((i2,j2))
   return dist[gy][gx]
+
+proc kruskal(G:GraphWithCost,n:int):int =
+  var aa = newSeq[tuple[u:int,v:int,co:int]](n)
+  for ix,i in G.edgesWithCost:
+    for j in i:
+      aa.add((ix,j.to,j.c))
+  result = 0
+  var
+    nn = aa.sortedByIt((it.co))
+    uf = makeUf(n)
+  for i in nn:
+    var(u,v,c)=(i[0],i[1],i[2])
+    if(uf.sameUf(u,v)):continue
+    uf.uniteUf(u,v)
+    result += c
+
