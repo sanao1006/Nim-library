@@ -332,25 +332,18 @@ func erato(N:int):seq[int] =
             q += p
     return(zip((tail isprime),(1..N).toSeq)).filterIt(it[0]==true).mapIt(it[1])
 
-#順列全探索用  quoted from "https://forum.nim-lang.org/t/2812"
-proc perm[T](a: openarray[T], n: int, use: var seq[bool]): seq[seq[T]] =
-  result = newSeq[seq[T]]()
-  if n <= 0: return
-  for i in 0 .. a.high:
-    if not use[i]:
-      if n == 1:result.add(@[a[i]])
-      else:
-        use[i] = true
-        for j in perm(a, n - 1, use):result.add(a[i] & j)
-        use[i] = false
-proc permutations[T](a: openarray[T], n: int = a.len): seq[seq[T]] =
-  var use = newSeq[bool](a.len)
-  perm(a, n, use)
-
+iterator permutations[T](s: openArray[T]): seq[T] =
+  var x = @s
+  x.sort(cmp)
+  yield x
+  while x.nextPermutation():
+    yield x
+ 
 proc nCr(n:int,r:int):int = 
   if(r==0 or r==n):return 1
   else:
     return nCr(n-1,r-1) + nCr(n-1,r)
+
 #itertools quoted from "https://github.com/narimiran/itertools/blob/master/src/itertools.nim"
 iterator prod[T](s: openArray[T], repeat: Positive): seq[T] =
   var counters = newSeq[int](repeat)
