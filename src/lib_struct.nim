@@ -25,6 +25,11 @@ proc uniteUf(uf:UnionFind,x,y:int):void =
 
 proc sameUf(uf:UnionFind,x,y:int):bool =
   return if(uf.rootUf(x) == uf.rootUf(y)):true else: false
+  
+proc groupUf(uf:UnionFind):int=
+  result = 0
+  for i in uf.parent:
+    if i < 0:result += 1
 #----------------------------------------------------------
 #binary indexed tree
 type Bit = ref object 
