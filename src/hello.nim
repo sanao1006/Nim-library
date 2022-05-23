@@ -1,5 +1,5 @@
 {.passc: "-std=gnu++17 -Wall -Wextra -O2 -DONLINE_JUDGE -I/opt/boost/gcc/include -L/opt/boost/gcc/lib -I/opt/ac-library".}
-{.optimization:speed,warning[UnusedImport]: off,warning[Deprecated]: off,hint[XDeclaredButNotUsed]: off.}
+{.optimization:speed,warnings: off,hints: off.}
 import strformat, macros, std/algorithm, tables, sets, lists,intsets, critbits, sequtils, strutils, std/math, times,sugar, options, bitops, heapqueue,std/deques,os
 const MOD = 1000000007;const MOD_ANOTHER = 998244353
 
