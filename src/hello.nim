@@ -101,13 +101,7 @@ template isemptyQ(a:typed):untyped =
   else:false
 
 proc toInt(c:char): int = return int(c) - int('0')
-# 配列埋め----------------------------------------------------------
 
-func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
-  result = newSeqWith(height, newSeq[T](width))
-  for i in 0..<height:
-    for j in 0..<width:
-      result[i][j]=fille
 #------------------------------------------------------------------
 #union-find
 type UnionFind = ref object
@@ -252,7 +246,7 @@ func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath =
 # maze search by BFS
 proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
   var 
-    dist=makeSeqNums(R,C,-1)
+    dist=newSeqWith(R,newSeqWith(C,-1))
     que=initDeque[(int,int)]()
   que.addLast((sy,sx))
   dist[sy][sx]=0
