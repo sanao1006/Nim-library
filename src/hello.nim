@@ -244,7 +244,7 @@ func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath =
       que.addLast(nv)
 
 # maze search by BFS
-proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
+proc mazeBFS(R,C,sy,sx:int,field:seq[string],wall:char):seq[seq[int]]=
   var 
     dist=newSeqWith(R,newSeqWith(C,-1))
     que=initDeque[(int,int)]()
@@ -258,7 +258,7 @@ proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
       if(dist[i2][j2] == -1):
         dist[i2][j2]=dist[ny][nx] + 1
         que.addLast((i2,j2))
-  return dist[gy][gx]
+  return dist
 
 proc kruskal(G:GraphWithCost,n:int):int =
   var aa = newSeq[tuple[u:int,v:int,co:int]](n)
