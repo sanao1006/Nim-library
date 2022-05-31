@@ -1,10 +1,5 @@
 include module
 
-func makeSeqNums[T](height:int,width:int,fille:T):seq[seq[T]] =
-  result = newSeqWith(height, newSeq[T](width))
-  for i in 0..<height:
-    for j in 0..<width:
-      result[i][j]=fille
 
 template isemptyQ(a:typed):untyped = 
   if(a.len==0):true
@@ -88,13 +83,13 @@ func bfs(G:seq[seq[int]],start:int,n:int):ShortestPath =
       que.addLast(nv)
 
 #迷路探索
-proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
+proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):seq[seq[int]]=
   var 
-    dist=makeSeqNums(R,C,-1)
+    dist=newSeqWith(R,newSeqWith(C,-1))
     que=initDeque[(int,int)]()
   que.addLast((sy,sx))
   dist[sy][sx]=0
-  while(not(que.isemptyQ)):
+  while(que.len>0):
     var(ny,nx)=que.popFirst()
     for (i2,j2) in ([[ny+1,nx],[ny-1,nx],[ny,nx+1],[ny,nx-1]]):
       if(not((i2>=0 and i2 < R) and (j2 >= 0 and j2 < C))):continue
@@ -102,7 +97,7 @@ proc mazeBFS(R,C,sy,sx,gy,gx:int,field:seq[string],wall:char):int=
       if(dist[i2][j2] == -1):
         dist[i2][j2]=dist[ny][nx] + 1
         que.addLast((i2,j2))
-  return dist[gy][gx]
+  return dist
 
 proc kruskal(G:GraphWithCost,n:int):int =
   var aa = newSeq[tuple[u:int,v:int,co:int]](n)
