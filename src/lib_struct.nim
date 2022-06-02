@@ -1,5 +1,7 @@
 include module
 
+#union-find
+
 type UnionFind = ref object
   parent:seq[int]
   rank:seq[int]
@@ -57,3 +59,33 @@ proc buildBit(bit:Bit,arr:seq[int]):Bit=
   return bit
 proc makeBit(arr:seq[int],n:int):Bit =
   return initBit(n).buildBit(arr)
+
+#--------------------------------------------------------------
+# heapdict(like multiset)
+
+type HeapDict[T] = ref object
+  h:HeapQueue[T]
+  d:Table[T,int]
+proc initHD(type_name:typedesc):HeapDict[type_name]=
+  HeapDict[type_name](h:initHeapQueue[type_name](),d:initTable[type_name,int]())
+proc insertHD[T](hd:HeapDict,x:T):void=
+  hd.h.push(x)
+  if(not(hd.d.contains(x))):hd.d[x] = 1
+  else: hd.d[x] += 1
+proc getminHD(hd:HeapDict):int=
+  result = hd.h[0]
+proc is_existHD[T](hd:HeapDict,x:T):bool=
+  if(hd.d.contains(x) and hd.d[x] != 0):
+    return true
+  else: return false
+proc eraseHD[T](hd:HeapDict,x:T):void=
+  if(not(hd.d.contains(x)) or hd.d[x]==0):
+    quit("naiyo")
+  else:
+    hd.d[x] -= 1
+  while(hd.h.len>0):
+    if(hd.d[hd.h[0]]==0):
+      discard hd.h.pop()
+    else:
+      break
+ 
