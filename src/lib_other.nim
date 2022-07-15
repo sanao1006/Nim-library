@@ -135,3 +135,13 @@ func compress[T](arr:seq[T]):seq[T]=
 proc sortFst[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.fst).mapIt((it.fst,it.snd))
 
 proc sortSnd[T, U](arr:seq[tuple[fst:T,snd:U]]):seq[(T,U)] = arr.sortedByIt(it.snd).mapIt((it.fst,it.snd))
+
+# ランレングス圧縮
+proc rle[T](arr:seq[T]):seq[(T,int)]=
+  iterator groupBy[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
+    var t = initTable[T, seq[T]]()
+    for x in s:t.mGetOrPut(x, @[]).add(x)
+    for x in t.pairs:yield x
+  for (i,j) in arr.groupBy():result.add((i, j.len))
+  result.sorted()
+
