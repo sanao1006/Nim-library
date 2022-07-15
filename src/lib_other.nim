@@ -144,4 +144,10 @@ proc rle[T](arr:seq[T]):seq[(T,int)]=
     for x in t.pairs:yield x
   for (i,j) in arr.groupBy():result.add((i, j.len))
   result.sorted()
-
+proc rle(arr:string):seq[(char,int)]=
+  iterator groupBy[T](s: openArray[T]): tuple[k: T, v: seq[T]] =
+    var t = initTable[T, seq[T]]()
+    for x in s:t.mGetOrPut(x, @[]).add(x)
+    for x in t.pairs:yield x
+  for (i,j) in arr.groupBy():result.add((i, j.len))
+  result.sorted()
